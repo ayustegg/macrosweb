@@ -17,19 +17,18 @@ export function BottomNav() {
 
   return (
     <nav
-      className="app-bottom-nav shrink-0 w-full border-t border-border/80 bg-background/90 backdrop-blur-xl backdrop-saturate-150"
+      className="app-bottom-nav border-border/80 bg-background/90 w-full shrink-0 border-t backdrop-blur-xl backdrop-saturate-150"
       aria-label="Navegación principal"
     >
-      <div className="grid w-full grid-cols-4 px-page pt-1 pb-1">
+      <div className="px-page pb-safe grid w-full grid-cols-4 pt-1">
         {items.map(({ href, label, Icon }) => {
-          const active =
-            pathname === href || pathname.startsWith(href + "/");
+          const active = pathname === href || pathname.startsWith(href + "/");
 
           return (
             <Link
               key={href}
               href={href}
-              className={`flex flex-col items-center gap-0.5 py-1 transition-colors ${
+              className={`flex min-h-[44px] flex-col items-center justify-center gap-0.5 py-1 transition-colors ${
                 active ? "text-foreground" : "text-muted-foreground"
               }`}
             >
@@ -39,7 +38,7 @@ export function BottomNav() {
                 fill={active ? "currentColor" : "none"}
                 aria-hidden
               />
-              <span className="text-[10px] font-semibold leading-none tracking-wide">
+              <span className="text-[10px] leading-none font-semibold tracking-wide">
                 {label}
               </span>
             </Link>

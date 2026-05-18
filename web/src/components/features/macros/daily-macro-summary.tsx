@@ -23,9 +23,24 @@ interface Props {
 }
 
 const LEGENDS = [
-  { key: "protein_g" as const, label: "Proteína", color: "var(--macro-pro)", track: "var(--macro-pro-tint)" },
-  { key: "carbs_g" as const, label: "Carbohidratos", color: "var(--macro-car)", track: "var(--macro-car-tint)" },
-  { key: "fat_g" as const, label: "Grasa", color: "var(--macro-fat)", track: "var(--macro-fat-tint)" },
+  {
+    key: "protein_g" as const,
+    label: "Proteína",
+    color: "var(--macro-pro)",
+    track: "var(--macro-pro-tint)",
+  },
+  {
+    key: "carbs_g" as const,
+    label: "Carbohidratos",
+    color: "var(--macro-car)",
+    track: "var(--macro-car-tint)",
+  },
+  {
+    key: "fat_g" as const,
+    label: "Grasa",
+    color: "var(--macro-fat)",
+    track: "var(--macro-fat-tint)",
+  },
 ];
 
 export function DailyMacroSummary({ summary, goal }: Props) {
@@ -49,27 +64,29 @@ export function DailyMacroSummary({ summary, goal }: Props) {
 
   return (
     <SummaryCard className="px-[18px] pt-[22px] pb-4">
-      <div className="relative mx-auto flex justify-center" style={{ width: 212, height: 212 }}>
+      <div
+        className="relative mx-auto flex justify-center"
+        style={{ width: 212, height: 212 }}
+      >
         <MultiMacroRing totals={summary} target={goal} size={212} />
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="mb-1.5 text-[9.5px] font-medium tracking-widest text-muted-foreground uppercase">
+          <span className="text-muted-foreground mb-1.5 text-[9.5px] font-medium tracking-widest uppercase">
             Calorías
           </span>
-          <span className="num text-[38px] leading-none font-bold tracking-tight text-foreground">
+          <span className="num text-foreground text-[38px] leading-none font-bold tracking-tight">
             {fmt(summary.kcal)}
-          </span>
-          <span className="num mt-1 text-[11px] text-muted-foreground">
-            / {fmt(goal.kcal)} kcal
           </span>
         </div>
       </div>
 
-      <div className="mt-1.5 flex justify-center gap-1.5 text-xs text-muted-foreground">
+      <div className="text-muted-foreground mt-4 flex justify-center gap-1.5 text-xs">
         <span>Restante</span>
-        <span className="num font-semibold text-foreground">{fmt(remaining)} kcal</span>
+        <span className="num text-foreground font-semibold">
+          {fmt(remaining)} kcal
+        </span>
       </div>
 
-      <div className="mt-[18px] grid gap-3 border-t border-border/80 pt-4">
+      <div className="border-border/80 mt-[18px] grid gap-3 border-t pt-4">
         {LEGENDS.map(({ key, label, color, track }) => (
           <MacroLegend
             key={key}
@@ -102,12 +119,17 @@ function MacroLegend({
   return (
     <div>
       <div className="mb-1.5 flex items-baseline justify-between">
-        <span className="inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-accent-foreground">
-          <span className="size-[7px] rounded-sm" style={{ background: color }} />
+        <span className="text-accent-foreground inline-flex items-center gap-1.5 text-[12.5px] font-semibold">
+          <span
+            className="size-[7px] rounded-sm"
+            style={{ background: color }}
+          />
           {label}
         </span>
-        <span className="num text-xs text-muted-foreground">
-          <span className="font-semibold text-foreground">{Math.round(value)}</span>
+        <span className="num text-muted-foreground text-xs">
+          <span className="text-foreground font-semibold">
+            {Math.round(value)}
+          </span>
           <span className="mx-1">/</span>
           {target} g
         </span>
@@ -134,7 +156,7 @@ function SummaryCard({
 }) {
   return (
     <div
-      className={`rounded-[22px] border border-border bg-card shadow-app-1 ${className}`}
+      className={`border-border bg-card shadow-app-1 rounded-[22px] border ${className}`}
     >
       {children}
     </div>

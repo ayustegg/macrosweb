@@ -232,24 +232,21 @@ export function TodayPageClient({
   const hasEntries = dayLogData && Object.keys(dayLogData.slots).length > 0;
 
   return (
-    <div
-      className="w-full"
-      {...pullHandlers}
-    >
+    <div className="w-full" {...pullHandlers}>
       {(pulling || refreshing) && (
         <div className="text-muted-foreground flex justify-center py-2 text-xs">
           {refreshing ? "Actualizando..." : "Suelta para actualizar"}
         </div>
       )}
 
-      <div className="space-y-3.5 px-page pt-2">
+      <div className="px-page space-y-3.5 pt-4">
         <DayNavigator date={date} timezone={timezone} />
         <DailyMacroSummary summary={summary} goal={goal} />
         <div className="flex items-baseline justify-between px-1 pt-1">
           <span className="section-label">Comidas del día</span>
           <Link
             href="/profile"
-            className="text-xs font-semibold text-muted-foreground hover:text-foreground"
+            className="text-muted-foreground hover:text-foreground text-xs font-semibold"
           >
             Editar comidas
           </Link>
@@ -292,11 +289,11 @@ export function TodayPageClient({
 
 function EmptyDay({ date }: { date: string }) {
   return (
-    <div className="flex flex-col items-center justify-center px-page pt-8 pb-16 text-center">
-      <div className="mb-5 grid h-32 w-32 place-items-center rounded-full bg-muted">
+    <div className="px-page flex flex-col items-center justify-center pt-8 pb-16 text-center">
+      <div className="bg-muted mb-5 grid h-32 w-32 place-items-center rounded-full">
         <svg
           viewBox="0 0 64 64"
-          className="h-16 w-16 text-muted-foreground"
+          className="text-muted-foreground h-16 w-16"
           fill="none"
           stroke="currentColor"
           strokeWidth="1.5"
@@ -322,11 +319,11 @@ function EmptyDay({ date }: { date: string }) {
 
 function FirstTimeWelcome() {
   return (
-    <div className="flex flex-col items-center justify-center px-page pt-8 pb-16 text-center">
-      <div className="mb-5 grid h-32 w-32 place-items-center rounded-full bg-muted">
+    <div className="px-page flex flex-col items-center justify-center pt-8 pb-16 text-center">
+      <div className="bg-muted mb-5 grid h-32 w-32 place-items-center rounded-full">
         <svg
           viewBox="0 0 64 64"
-          className="h-16 w-16 text-macro-car"
+          className="text-macro-car h-16 w-16"
           fill="none"
           stroke="currentColor"
           strokeWidth="1.5"

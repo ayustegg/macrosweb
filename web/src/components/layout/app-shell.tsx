@@ -7,14 +7,12 @@ import { BottomNav } from "./bottom-nav";
  */
 export function AppShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex h-[100dvh] w-full max-w-[100dvw] flex-col overflow-hidden bg-background">
+    <div className="bg-background flex h-[100dvh] w-full max-w-[100dvw] flex-col overflow-hidden">
       <AppHeader />
       <main className="flex min-h-0 w-full flex-1 flex-col overflow-y-auto overscroll-y-contain">
         {children}
       </main>
-      <div className="shrink-0 pb-safe">
-        <BottomNav />
-      </div>
+      <BottomNav />
     </div>
   );
 }
