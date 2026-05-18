@@ -12,11 +12,12 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "prepare": "husky",
-    "supabase:types": "supabase gen types typescript --linked > src/lib/supabase/database.types.ts"
+    "supabase:types": "npx supabase gen types typescript --linked > src/lib/supabase/database.types.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.1",
     "@hookform/resolvers": "^5.2.2",
+    "@radix-ui/react-label": "^2.1.8",
     "@radix-ui/react-slot": "^1.2.4",
     "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.105.4",
@@ -24,6 +25,7 @@
     "clsx": "^2.1.1",
     "lucide-react": "^1.16.0",
     "next": "15.5.18",
+    "radix-ui": "^1.4.3",
     "react": "19",
     "react-dom": "19",
     "react-hook-form": "^7.76.0",
