@@ -187,6 +187,21 @@ export async function getEntryById(
   };
 }
 
+export async function getTotalEntriesCount(): Promise<number> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return 0;
+
+  const { count } = await supabase
+    .from("entries")
+    .select("id", { count: "exact", head: true })
+    .eq("owner_id", user.id);
+
+  return count ?? 0;
+}
+
 export async function recalculateDayLogTotals(dayLogId: string): Promise<void> {
   const supabase = await createClient();
 

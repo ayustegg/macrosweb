@@ -2,10 +2,10 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import Link from "next/link";
-import { Plus } from "lucide-react";
 import { DayNavigator } from "@/components/features/meals/day-navigator";
 import { MealSlotCard } from "@/features/meals/components/meal-slot-card";
 import { DailyMacroSummary } from "@/components/features/macros/daily-macro-summary";
+import { Button } from "@/components/ui/button";
 import type { DayLogWithEntries, SlotTotals } from "@/features/meals/queries";
 import type { MealSlot } from "@/features/meals/types";
 import type { Entry } from "@/types/entry";
@@ -22,6 +22,7 @@ interface Props {
   goal: Goal | null;
   date: string;
   timezone?: string;
+  hasAnyEntry?: boolean;
 }
 
 interface FetchResponse {
@@ -81,7 +82,13 @@ function useSlots(): MealSlot[] {
   return slots;
 }
 
-export function TodayPageClient({ dayLog, goal, date, timezone }: Props) {
+export function TodayPageClient({
+  dayLog,
+  goal,
+  date,
+  timezone,
+  hasAnyEntry = false,
+}: Props) {
   const [dayLogData, setDayLogData] = useState(() => dayLog);
   const snapshotRef = useRef<DayLogWithEntries | null>(null);
   const slots = useSlots();
@@ -245,24 +252,119 @@ export function TodayPageClient({ dayLog, goal, date, timezone }: Props) {
             );
           })}
         </div>
+      ) : hasAnyEntry ? (
+        <EmptyDay />
       ) : (
-        <div className="flex flex-col items-center justify-center px-4 py-16 text-center">
-          <div className="bg-muted mb-4 rounded-full p-4">
-            <span className="text-2xl">🍽️</span>
-          </div>
-          <h2 className="mb-1 text-lg font-semibold">Sin registros</h2>
-          <p className="text-muted-foreground mb-6 text-sm">
-            Añade tu primera comida del día para empezar.
-          </p>
-          <Link
-            href="/foods/search"
-            className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex h-10 items-center justify-center rounded-md px-6 text-sm font-medium"
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Añadir comida
-          </Link>
-        </div>
+        <FirstTimeWelcome />
       )}
+    </div>
+  );
+}
+
+function EmptyDay() {
+  return (
+    <div className="flex flex-col items-center justify-center px-4 pt-8 pb-16 text-center">
+      <svg
+        viewBox="0 0 120 120"
+        className="mb-5 h-32 w-32 text-zinc-300 dark:text-zinc-600"
+        fill="none"
+      >
+        <circle
+          cx="60"
+          cy="60"
+          r="48"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeDasharray="6 4"
+        />
+        <path
+          d="M72 72 Q84 60 72 48"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          fill="none"
+        />
+        <path
+          d="M48 72 Q36 60 48 48"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          fill="none"
+        />
+        <path
+          d="M42 42 L36 36 M78 42 L84 36 M60 36 V28"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
+      </svg>
+      <h2 className="mb-1 text-lg font-semibold">Sin registros hoy</h2>
+      <p className="text-muted-foreground mb-6 max-w-64 text-sm">
+        Aún no has añadido nada. Busca un alimento para empezar a registrar tu
+        día.
+      </p>
+      <Link href="/foods/search">
+        <Button size="lg">Empezar a registrar →</Button>
+      </Link>
+    </div>
+  );
+}
+
+function FirstTimeWelcome() {
+  return (
+    <div className="flex flex-col items-center justify-center px-4 pt-8 pb-16 text-center">
+      <svg
+        viewBox="0 0 120 120"
+        className="mb-5 h-32 w-32 text-amber-400"
+        fill="none"
+      >
+        <path
+          d="M60 20 L64 44 L88 44 L68 58 L76 82 L60 66 L44 82 L52 58 L32 44 L56 44 Z"
+          fill="currentColor"
+          opacity="0.9"
+        />
+        <circle
+          cx="60"
+          cy="60"
+          r="36"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          opacity="0.3"
+          strokeDasharray="4 3"
+        />
+        <path
+          d="M60 24 V18"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
+        <path
+          d="M60 102 V96"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
+        <path
+          d="M24 60 H18"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
+        <path
+          d="M102 60 H96"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
+      </svg>
+      <h2 className="mb-1 text-lg font-semibold">¡Bienvenido!</h2>
+      <p className="text-muted-foreground mb-6 max-w-72 text-sm leading-relaxed">
+        Este es tu diario de comidas. Busca alimentos, añádelos a tus momentos
+        del día y sigue tus macros al instante.
+      </p>
+      <Link href="/foods/search">
+        <Button size="lg">Empezar a registrar →</Button>
+      </Link>
     </div>
   );
 }
