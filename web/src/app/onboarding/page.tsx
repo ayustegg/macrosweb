@@ -1,4 +1,4 @@
-import { OnboardingForm } from "@/features/onboarding/components/onboarding-form";
+import { OnboardingWizard } from "@/features/onboarding/components/onboarding-wizard";
 
 export default function OnboardingPage() {
   return (
@@ -9,10 +9,10 @@ export default function OnboardingPage() {
             Completa tu perfil
           </h1>
           <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-            Necesitamos estos datos para calcular tus objetivos
+            Paso a paso para calcular tus objetivos
           </p>
         </div>
-        <OnboardingForm />
+        <OnboardingWizard />
       </div>
     </div>
   );
