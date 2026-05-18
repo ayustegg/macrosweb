@@ -116,8 +116,8 @@ export function HeaderBrandMotionProvider({
     idleRotation,
   ]);
 
-  const transition =
-    !dateWobble && !pull.isDragging && (settleFrom !== null || !spinning);
+  /** CSS ease only when landing from tab/refresh spin — scroll uses hook lerp. */
+  const transition = !dateWobble && !pull.isDragging && settleFrom !== null;
 
   const triggerDateChange = useCallback(() => {
     if (reducedMotion) return;

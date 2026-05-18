@@ -1,9 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const MAIN_SELECTOR = ".app-shell-main";
-const DEFAULT_DEG_PER_PX = 0.45;
+const DEFAULT_DEG_PER_PX = 0.4;
+/** Per-frame lerp toward scroll target (lower = silkier, higher = snappier). */
+const SCROLL_SMOOTHING = 0.1;
+const SETTLE_EPSILON = 0.03;
 
 function prefersReducedMotion(): boolean {
   if (typeof window === "undefined") return false;
@@ -13,6 +16,9 @@ function prefersReducedMotion(): boolean {
 /** Rotation (deg) tied to vertical scroll of the app shell main area. */
 export function useMainScrollRotation(degPerPx = DEFAULT_DEG_PER_PX): number {
   const [rotation, setRotation] = useState(0);
+  const displayedRef = useRef(0);
+  const targetRef = useRef(0);
+  const rafRef = useRef(0);
 
   useEffect(() => {
     if (prefersReducedMotion()) return;
@@ -20,23 +26,44 @@ export function useMainScrollRotation(degPerPx = DEFAULT_DEG_PER_PX): number {
     const main = document.querySelector(MAIN_SELECTOR);
     if (!main) return;
 
-    let raf = 0;
+    const step = () => {
+      rafRef.current = 0;
+      const target = targetRef.current;
+      let current = displayedRef.current;
+      const diff = target - current;
 
-    const update = () => {
-      raf = 0;
-      setRotation(main.scrollTop * degPerPx);
+      if (Math.abs(diff) < SETTLE_EPSILON) {
+        current = target;
+      } else {
+        current += diff * SCROLL_SMOOTHING;
+      }
+
+      displayedRef.current = current;
+      setRotation(current);
+
+      if (Math.abs(target - current) >= SETTLE_EPSILON) {
+        rafRef.current = requestAnimationFrame(step);
+      }
+    };
+
+    const schedule = () => {
+      if (!rafRef.current) rafRef.current = requestAnimationFrame(step);
     };
 
     const onScroll = () => {
-      if (!raf) raf = requestAnimationFrame(update);
+      targetRef.current = main.scrollTop * degPerPx;
+      schedule();
     };
 
+    targetRef.current = main.scrollTop * degPerPx;
+    displayedRef.current = targetRef.current;
+    setRotation(targetRef.current);
+
     main.addEventListener("scroll", onScroll, { passive: true });
-    update();
 
     return () => {
       main.removeEventListener("scroll", onScroll);
-      if (raf) cancelAnimationFrame(raf);
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
   }, [degPerPx]);
 

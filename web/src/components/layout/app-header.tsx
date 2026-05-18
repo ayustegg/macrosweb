@@ -46,7 +46,7 @@ export function AppHeader({ initials }: Props) {
                 : {
                     transform: `rotate(${rotation}deg)`,
                     transition: transition
-                      ? "transform 0.42s cubic-bezier(0.4, 0, 0.2, 1)"
+                      ? "transform 0.78s cubic-bezier(0.22, 1, 0.36, 1)"
                       : "none",
                   }
             }
