@@ -76,9 +76,17 @@ export function PwaFirstLaunchSplash() {
       )}
       style={{ transitionDuration: `${FADE_MS}ms` }}
     >
-      <span className="animate-brand-spin inline-flex" aria-hidden>
-        <BrandMark size={56} />
-      </span>
+      <div className="flex flex-col items-center gap-4">
+        <span className="animate-brand-spin inline-flex" aria-hidden>
+          <BrandMark size={56} />
+        </span>
+        <div className="flex flex-col items-center gap-1">
+          <span className="text-2xl font-bold tracking-tight">Mido</span>
+          <span className="text-muted-foreground text-xs">
+            creado por ayuste.gg
+          </span>
+        </div>
+      </div>
     </div>
   );
 }

@@ -47,19 +47,17 @@ export function BottomNav() {
               onClick={() => {
                 if (!active) startNavigation(href);
               }}
-              className={`relative z-10 flex flex-col items-center justify-center gap-0.5 transition-colors ${
+              aria-label={label}
+              className={`relative z-10 flex items-center justify-center transition-colors ${
                 active ? "text-foreground" : "text-muted-foreground"
               }`}
             >
               <Icon
-                className="size-[22px]"
+                className="size-[24px]"
                 strokeWidth={active ? 2.25 : 1.75}
                 fill={active ? "currentColor" : "none"}
                 aria-hidden
               />
-              <span className="text-[10px] leading-none font-semibold tracking-wide">
-                {label}
-              </span>
             </Link>
           );
         })}
