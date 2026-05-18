@@ -182,13 +182,49 @@
     padding-left: max(1rem, env(safe-area-inset-left, 0px));
     padding-right: max(1rem, env(safe-area-inset-right, 0px));
   }
-  /* Top: padding fijo; iOS standalone con status bar default no necesita inset-top extra */
+  /*
+   * Safe areas: Safari normal = padding mínimo.
+   * PWA instalada = insets de notch, status bar y home indicator.
+   */
   .pt-safe {
     padding-top: 0.75rem;
   }
-  /* Bottom: solo el home indicator; evita min 1rem que “reserva” hueco en PWA */
   .pb-safe {
-    padding-bottom: env(safe-area-inset-bottom, 0.5rem);
+    padding-bottom: 0.5rem;
+  }
+  .app-shell > header {
+    padding-top: 0.75rem;
+  }
+  @media (display-mode: standalone), (display-mode: fullscreen) {
+    .app-shell {
+      padding-top: constant(safe-area-inset-top);
+      padding-top: env(safe-area-inset-top, 0px);
+    }
+    .app-shell > header {
+      padding-top: 0;
+    }
+    .pt-safe {
+      padding-top: max(0.75rem, env(safe-area-inset-top, 0px));
+    }
+    .pb-safe {
+      padding-bottom: constant(safe-area-inset-bottom);
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+  }
+  /* Fallback iOS: navigator.standalone + clase en <html> */
+  html.standalone .app-shell {
+    padding-top: constant(safe-area-inset-top);
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+  html.standalone .app-shell > header {
+    padding-top: 0;
+  }
+  html.standalone .pt-safe {
+    padding-top: max(0.75rem, env(safe-area-inset-top, 0px));
+  }
+  html.standalone .pb-safe {
+    padding-bottom: constant(safe-area-inset-bottom);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
   }
   /*
    * App shell (MDN sticky footer + PWA mobile):
@@ -196,13 +232,25 @@
    */
   .app-shell {
     display: grid;
+    box-sizing: border-box;
     width: 100%;
-    /* svh evita hueco inferior en iOS standalone (100dvh > viewport visible) */
     height: 100svh;
     min-height: 100svh;
     max-height: 100svh;
     grid-template-rows: auto 1fr auto;
     overflow: hidden;
+  }
+  @media (display-mode: standalone), (display-mode: fullscreen) {
+    .app-shell {
+      height: 100dvh;
+      min-height: 100dvh;
+      max-height: 100dvh;
+    }
+  }
+  html.standalone .app-shell {
+    height: 100dvh;
+    min-height: 100dvh;
+    max-height: 100dvh;
   }
   .app-shell-main {
     min-height: 0;

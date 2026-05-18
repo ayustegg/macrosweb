@@ -4,7 +4,7 @@ import { APP_NAME } from "@/lib/app-config";
 
 export function AppHeader() {
   return (
-    <header className="border-border/80 bg-background/90 pt-safe w-full border-b backdrop-blur-xl backdrop-saturate-150">
+    <header className="border-border/80 bg-background/90 w-full border-b backdrop-blur-xl backdrop-saturate-150">
       <div className="px-page flex w-full items-center gap-2.5 py-2.5">
         <Link
           href="/today"

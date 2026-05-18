@@ -1,71 +1,143 @@
 "use client";
 
-import { useRef, useState, useCallback } from "react";
+import {
+  useRef,
+  useState,
+  useEffect,
+  useCallback,
+  type RefObject,
+} from "react";
 
-interface PullToRefreshHandlers {
-  onTouchStart: (e: React.TouchEvent) => void;
-  onTouchMove: (e: React.TouchEvent) => void;
-  onTouchEnd: (e: React.TouchEvent) => void;
+const DEFAULT_THRESHOLD = 64;
+const DEFAULT_MAX_PULL = 96;
+const DEFAULT_SCROLL_SELECTOR = ".app-shell-main";
+
+interface UsePullToRefreshOptions {
+  threshold?: number;
+  maxPull?: number;
+  scrollSelector?: string;
 }
 
-interface UsePullToRefreshReturn {
-  pulling: boolean;
+export interface UsePullToRefreshReturn {
+  containerRef: RefObject<HTMLDivElement | null>;
+  pullDistance: number;
   refreshing: boolean;
-  handlers: PullToRefreshHandlers;
+  canRelease: boolean;
+  progress: number;
+  isDragging: boolean;
 }
 
 export function usePullToRefresh(
   onRefresh: () => void | Promise<void>,
-  threshold = 80
+  options: UsePullToRefreshOptions = {}
 ): UsePullToRefreshReturn {
-  const startYRef = useRef<number | null>(null);
-  const pullingRef = useRef(false);
-  const [pulling, setPulling] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
+  const threshold = options.threshold ?? DEFAULT_THRESHOLD;
+  const maxPull = options.maxPull ?? DEFAULT_MAX_PULL;
+  const scrollSelector = options.scrollSelector ?? DEFAULT_SCROLL_SELECTOR;
 
-  const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    if (typeof window !== "undefined" && window.scrollY === 0) {
-      startYRef.current = e.touches[0]!.clientY;
-    }
+  const containerRef = useRef<HTMLDivElement>(null);
+  const startYRef = useRef<number | null>(null);
+  const pullDistanceRef = useRef(0);
+  const onRefreshRef = useRef(onRefresh);
+  const refreshingRef = useRef(false);
+
+  const [pullDistance, setPullDistance] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+
+  useEffect(() => {
+    onRefreshRef.current = onRefresh;
+    refreshingRef.current = refreshing;
+    pullDistanceRef.current = pullDistance;
+  }, [onRefresh, refreshing, pullDistance]);
+
+  const setPull = useCallback((distance: number) => {
+    pullDistanceRef.current = distance;
+    setPullDistance(distance);
   }, []);
 
-  const handleTouchMove = useCallback(
-    (e: React.TouchEvent) => {
-      if (startYRef.current === null || refreshing) return;
+  const getScrollParent = useCallback((): HTMLElement | null => {
+    const el = containerRef.current;
+    if (!el) return null;
+    return el.closest(scrollSelector) as HTMLElement | null;
+  }, [scrollSelector]);
+
+  const isAtScrollTop = useCallback(() => {
+    const scrollParent = getScrollParent();
+    return !scrollParent || scrollParent.scrollTop <= 0;
+  }, [getScrollParent]);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const onTouchStart = (e: TouchEvent) => {
+      if (refreshingRef.current || !isAtScrollTop()) return;
+      startYRef.current = e.touches[0]!.clientY;
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (startYRef.current === null || refreshingRef.current) return;
+
       const dy = e.touches[0]!.clientY - startYRef.current;
-      const isPulling = dy > threshold / 2 && dy > 0;
-      if (isPulling !== pullingRef.current) {
-        pullingRef.current = isPulling;
-        setPulling(isPulling);
+      if (dy <= 0) {
+        if (pullDistanceRef.current > 0) setPull(0);
+        setIsDragging(false);
+        return;
       }
-    },
-    [refreshing, threshold]
-  );
 
-  const handleTouchEnd = useCallback(async () => {
-    if (startYRef.current === null) return;
-    const wasPulling = pullingRef.current;
-    startYRef.current = null;
-    pullingRef.current = false;
-    setPulling(false);
+      if (!isAtScrollTop()) return;
 
-    if (wasPulling) {
+      e.preventDefault();
+      setIsDragging(true);
+      const damped = Math.min(maxPull, dy * 0.45);
+      setPull(damped);
+    };
+
+    const onTouchEnd = async () => {
+      if (startYRef.current === null) return;
+      startYRef.current = null;
+      setIsDragging(false);
+
+      const distance = pullDistanceRef.current;
+      if (distance < threshold) {
+        setPull(0);
+        return;
+      }
+
       setRefreshing(true);
+      setPull(threshold);
       try {
-        await Promise.resolve(onRefresh());
+        await Promise.resolve(onRefreshRef.current());
       } finally {
         setRefreshing(false);
+        setPull(0);
       }
-    }
-  }, [onRefresh]);
+    };
+
+    el.addEventListener("touchstart", onTouchStart, { passive: true });
+    el.addEventListener("touchmove", onTouchMove, { passive: false });
+    el.addEventListener("touchend", onTouchEnd);
+    el.addEventListener("touchcancel", onTouchEnd);
+
+    return () => {
+      el.removeEventListener("touchstart", onTouchStart);
+      el.removeEventListener("touchmove", onTouchMove);
+      el.removeEventListener("touchend", onTouchEnd);
+      el.removeEventListener("touchcancel", onTouchEnd);
+    };
+  }, [isAtScrollTop, maxPull, setPull, threshold]);
+
+  const activeDistance = refreshing ? threshold : pullDistance;
+  const progress = Math.min(1, activeDistance / threshold);
+  const canRelease = pullDistance >= threshold;
 
   return {
-    pulling,
+    containerRef,
+    pullDistance: activeDistance,
     refreshing,
-    handlers: {
-      onTouchStart: handleTouchStart,
-      onTouchMove: handleTouchMove,
-      onTouchEnd: handleTouchEnd,
-    },
+    canRelease,
+    progress,
+    isDragging,
   };
 }

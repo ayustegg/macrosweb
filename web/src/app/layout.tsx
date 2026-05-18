@@ -5,6 +5,7 @@ import {
   Noto_Sans,
   Playfair_Display,
 } from "next/font/google";
+import { StandaloneClass } from "@/components/layout/standalone-class";
 import { Toaster } from "@/components/ui/toaster";
 import "./globals.css";
 import { cn } from "@/lib/utils";
@@ -32,8 +33,7 @@ export const metadata: Metadata = {
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
-    // default: contenido bajo la status bar opaca (theme-color), sin banda extra por safe-area-top
-    statusBarStyle: "default",
+    statusBarStyle: "black-translucent",
     title: "Mido",
   },
   formatDetection: {
@@ -75,6 +75,7 @@ export default function RootLayout({
       )}
     >
       <body className="h-full w-full overflow-hidden">
+        <StandaloneClass />
         {children}
         <Toaster />
       </body>
