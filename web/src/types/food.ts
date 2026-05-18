@@ -2,7 +2,9 @@ export interface Food {
   id: string;
   owner_id: string | null;
   source: "off" | "custom";
+  brand: string | null;
   barcode: string | null;
+  off_id: string | null;
   name: string;
   serving_size_g: number;
   serving_name: string | null;

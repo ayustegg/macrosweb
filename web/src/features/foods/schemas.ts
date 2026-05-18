@@ -3,7 +3,9 @@ import { z } from "zod";
 export const createFoodSchema = z.object({
   name: z.string().min(1, "El nombre es obligatorio"),
   source: z.enum(["off", "custom"]),
+  brand: z.string().optional(),
   barcode: z.string().optional(),
+  off_id: z.string().optional(),
   serving_size_g: z.coerce
     .number()
     .positive("La porción debe ser mayor a 0")
@@ -25,7 +27,9 @@ export type CreateFoodInput = z.infer<typeof createFoodSchema>;
 
 export const updateFoodSchema = z.object({
   name: z.string().min(1, "El nombre es obligatorio").optional(),
+  brand: z.string().optional(),
   barcode: z.string().optional(),
+  off_id: z.string().optional(),
   serving_size_g: z.coerce
     .number()
     .positive("La porción debe ser mayor a 0")
