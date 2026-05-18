@@ -1,6 +1,5 @@
 "use client";
 
-import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { usePullToRefresh } from "@/hooks/use-pull-to-refresh";
 import { useSyncHeaderPull } from "@/components/layout/header-brand-motion-provider";
@@ -31,46 +30,52 @@ export function PullToRefresh({
     refreshing,
   });
 
-  const visible = pullDistance > 0 || refreshing;
+  const contentOffset =
+    pullDistance > 0 && !refreshing ? pullDistance * 0.42 : 0;
+
+  const showPullHint = pullDistance > 0 && !refreshing;
 
   return (
-    <div ref={containerRef} className={cn("w-full", className)}>
+    <div ref={containerRef} className={cn("relative w-full", className)}>
       <div
         aria-hidden
-        className="flex w-full items-end justify-center overflow-hidden"
+        className="pointer-events-none absolute inset-x-0 top-0 z-10 flex justify-center overflow-hidden"
         style={{
-          height: visible ? pullDistance : 0,
-          transition:
-            isDragging || refreshing
-              ? "none"
-              : "height 0.28s cubic-bezier(0.4, 0, 0.2, 1)",
+          height: showPullHint ? Math.min(pullDistance * 0.55, 40) : 0,
+          opacity: showPullHint ? Math.min(1, progress * 1.15) : 0,
+          transition: isDragging
+            ? "none"
+            : "height 0.32s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.25s ease",
         }}
       >
         <div
-          className="border-border/60 bg-card shadow-app-1 mb-1 flex size-9 items-center justify-center rounded-full border"
+          className="mt-1.5 h-[3px] rounded-full"
           style={{
-            opacity: Math.min(1, progress * 1.4),
-            transform: `scale(${
-              (canRelease && !refreshing ? 1.05 : 1) * (0.6 + progress * 0.4)
-            })`,
-            transition: isDragging ? "none" : "opacity 0.2s, transform 0.2s",
+            width: 28 + progress * 56,
+            background: canRelease
+              ? "var(--macro-kcal)"
+              : "color-mix(in oklch, var(--macro-kcal) 55%, var(--muted-foreground))",
+            boxShadow: canRelease
+              ? "0 0 10px color-mix(in oklch, var(--macro-kcal) 40%, transparent)"
+              : undefined,
+            transition: isDragging
+              ? "none"
+              : "width 0.2s ease, background 0.2s ease",
           }}
-        >
-          <Loader2
-            className={cn(
-              "text-muted-foreground size-[18px]",
-              refreshing && "animate-spin"
-            )}
-            style={
-              refreshing
-                ? undefined
-                : { transform: `rotate(${progress * 300}deg)` }
-            }
-            strokeWidth={2.25}
-          />
-        </div>
+        />
       </div>
-      {children}
+
+      <div
+        style={{
+          transform:
+            contentOffset > 0 ? `translateY(${contentOffset}px)` : undefined,
+          transition: isDragging
+            ? "none"
+            : "transform 0.36s cubic-bezier(0.32, 0.72, 0, 1)",
+        }}
+      >
+        {children}
+      </div>
     </div>
   );
 }

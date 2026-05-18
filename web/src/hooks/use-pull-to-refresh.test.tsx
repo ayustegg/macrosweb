@@ -75,12 +75,12 @@ describe("usePullToRefresh", () => {
 
     act(() => {
       fireTouch(root, "touchstart", 100);
-      fireTouch(root, "touchmove", 250);
+      fireTouch(root, "touchmove", 320);
     });
     expect(screen.getByTestId("can-release").textContent).toBe("true");
 
     act(() => {
-      fireTouch(root, "touchend", 250);
+      fireTouch(root, "touchend", 320);
     });
 
     await waitFor(() => {

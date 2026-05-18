@@ -17,8 +17,13 @@ interface UsePullToRefreshOptions {
   threshold?: number;
   maxPull?: number;
   scrollSelector?: string;
-  /** Minimum time the spinner stays visible after release. */
+  /** Minimum refresh duration so the header spin is perceptible on fast loads. */
   minRefreshDuration?: number;
+}
+
+function dampedPull(dy: number, maxPull: number): number {
+  const resistance = 0.55;
+  return maxPull * (1 - Math.exp(-(dy * resistance) / maxPull));
 }
 
 function wait(ms: number): Promise<void> {
@@ -101,8 +106,7 @@ export function usePullToRefresh(
 
       e.preventDefault();
       setIsDragging(true);
-      const damped = Math.min(maxPull, dy * 0.45);
-      setPull(damped);
+      setPull(dampedPull(dy, maxPull));
     };
 
     const onTouchEnd = async () => {
@@ -117,7 +121,7 @@ export function usePullToRefresh(
       }
 
       setRefreshing(true);
-      setPull(threshold);
+      setPull(0);
       try {
         await Promise.all([
           Promise.resolve(onRefreshRef.current()),
@@ -142,13 +146,12 @@ export function usePullToRefresh(
     };
   }, [isAtScrollTop, maxPull, minRefreshDuration, setPull, threshold]);
 
-  const activeDistance = refreshing ? threshold : pullDistance;
-  const progress = Math.min(1, activeDistance / threshold);
+  const progress = Math.min(1, pullDistance / threshold);
   const canRelease = pullDistance >= threshold;
 
   return {
     containerRef,
-    pullDistance: activeDistance,
+    pullDistance,
     refreshing,
     canRelease,
     progress,
