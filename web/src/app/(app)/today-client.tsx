@@ -10,6 +10,9 @@ import { Button } from "@/components/ui/button";
 import { PullToRefresh } from "@/components/layout/pull-to-refresh";
 import { useHeaderBrandMotion } from "@/components/layout/header-brand-motion-provider";
 import { TodayContentSkeleton } from "@/components/features/meals/today-content-skeleton";
+import { ContentCrossfade } from "@/components/ui/content-crossfade";
+import { CONTENT_FADE_IN } from "@/lib/content-fade";
+import { cn } from "@/lib/utils";
 import type { DayLogWithEntries, SlotTotals } from "@/features/meals/queries";
 import type { MealSlot } from "@/features/meals/types";
 import type { Entry } from "@/types/entry";
@@ -134,46 +137,55 @@ export function TodayPageClient({
       <div className="px-page flex flex-col gap-3.5 pt-2 pb-4">
         <DayNavigator date={date} timezone={timezone} />
 
-        {isDateNavigating ? (
-          <TodayContentSkeleton />
-        ) : (
-          <>
-            <DailyMacroSummary summary={summary} goal={goal} />
-            <MealsSectionHeader />
-            {hasEntries ? (
-              <div className="flex flex-col gap-3.5">
-                {mealSlots.map((slot) => {
-                  const slotData = dayLogData?.slots[slot.id];
-                  return (
-                    <MealSlotCard
-                      key={slot.id}
-                      slotId={slot.id}
-                      slotName={slot.name}
-                      slotData={
-                        slotData ?? {
-                          entries: [],
-                          totals: {
-                            kcal: 0,
-                            protein_g: 0,
-                            carbs_g: 0,
-                            fat_g: 0,
-                          },
-                        }
-                      }
-                      date={date}
-                      onDeleteEntry={handleDeleteEntry}
-                      onRollback={rollback}
-                    />
-                  );
-                })}
-              </div>
-            ) : hasAnyEntry ? (
-              <EmptyDay date={date} />
-            ) : (
-              <FirstTimeWelcome />
-            )}
-          </>
-        )}
+        <ContentCrossfade
+          showB={!isDateNavigating}
+          a={<TodayContentSkeleton />}
+          b={
+            <div className={cn("flex flex-col gap-3.5", CONTENT_FADE_IN)}>
+              <DailyMacroSummary summary={summary} goal={goal} />
+              <MealsSectionHeader />
+              {hasEntries ? (
+                <div className="flex flex-col gap-3.5">
+                  {mealSlots.map((slot, index) => {
+                    const slotData = dayLogData?.slots[slot.id];
+                    return (
+                      <div
+                        key={slot.id}
+                        className={CONTENT_FADE_IN}
+                        style={{
+                          animationDelay: `${Math.min(index * 40, 160)}ms`,
+                        }}
+                      >
+                        <MealSlotCard
+                          slotId={slot.id}
+                          slotName={slot.name}
+                          slotData={
+                            slotData ?? {
+                              entries: [],
+                              totals: {
+                                kcal: 0,
+                                protein_g: 0,
+                                carbs_g: 0,
+                                fat_g: 0,
+                              },
+                            }
+                          }
+                          date={date}
+                          onDeleteEntry={handleDeleteEntry}
+                          onRollback={rollback}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : hasAnyEntry ? (
+                <EmptyDay date={date} />
+              ) : (
+                <FirstTimeWelcome />
+              )}
+            </div>
+          }
+        />
       </div>
     </PullToRefresh>
   );

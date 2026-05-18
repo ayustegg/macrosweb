@@ -1,5 +1,6 @@
 import { AppHeader } from "./app-header";
 import { BottomNav } from "./bottom-nav";
+import { PageFade } from "./page-fade";
 import { TabNavigationProvider } from "./tab-navigation-provider";
 import { HeaderBrandMotionProvider } from "./header-brand-motion-provider";
 
@@ -20,7 +21,9 @@ export function AppShell({
       <HeaderBrandMotionProvider>
         <div className="app-shell bg-background">
           <AppHeader initials={headerInitials} />
-          <main className="app-shell-main w-full">{children}</main>
+          <main className="app-shell-main w-full">
+            <PageFade>{children}</PageFade>
+          </main>
           <BottomNav />
         </div>
       </HeaderBrandMotionProvider>
