@@ -18,18 +18,17 @@ function diffDays(a: string, b: string): number {
   return Math.round((da.getTime() - db.getTime()) / 86400000);
 }
 
-function formatLabel(dateStr: string, today: string): string {
+function formatSubline(dateStr: string, today: string): string {
   const diff = diffDays(dateStr, today);
   if (diff === 0) return "Hoy";
   if (diff === -1) return "Ayer";
   if (diff === -2) return "Anteayer";
   if (diff === 1) return "Mañana";
   const d = new Date(dateStr + "T12:00:00");
-  return d.toLocaleDateString("es", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
+  const year = d.getFullYear();
+  const todayYear = new Date(today + "T12:00:00").getFullYear();
+  if (year !== todayYear) return String(year);
+  return d.toLocaleDateString("es", { month: "long", year: "numeric" });
 }
 
 describe("DayNavigator utilities", () => {
@@ -69,31 +68,30 @@ describe("DayNavigator utilities", () => {
     });
   });
 
-  describe("formatLabel", () => {
+  describe("formatSubline", () => {
     it('returns "Hoy" for today', () => {
-      expect(formatLabel(today, today)).toBe("Hoy");
+      expect(formatSubline(today, today)).toBe("Hoy");
     });
 
     it('returns "Ayer" for yesterday', () => {
-      expect(formatLabel("2026-05-17", today)).toBe("Ayer");
+      expect(formatSubline("2026-05-17", today)).toBe("Ayer");
     });
 
     it('returns "Anteayer" for two days ago', () => {
-      expect(formatLabel("2026-05-16", today)).toBe("Anteayer");
+      expect(formatSubline("2026-05-16", today)).toBe("Anteayer");
     });
 
     it('returns "Mañana" for tomorrow', () => {
-      expect(formatLabel("2026-05-19", today)).toBe("Mañana");
+      expect(formatSubline("2026-05-19", today)).toBe("Mañana");
     });
 
-    it("formats dates in Spanish locale", () => {
-      const label = formatLabel("2026-05-10", today);
-      expect(label).toMatch(/10.*may.*2026/i);
+    it("formats month and year for older dates in the same year", () => {
+      const label = formatSubline("2026-05-10", today);
+      expect(label).toMatch(/may/i);
     });
 
-    it("formats dates correctly for different months", () => {
-      const label = formatLabel("2026-06-15", today);
-      expect(label).toMatch(/15.*jun.*2026/i);
+    it("returns year for dates in a different year", () => {
+      expect(formatSubline("2025-06-15", today)).toBe("2025");
     });
   });
 });

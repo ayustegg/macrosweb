@@ -211,6 +211,16 @@
       animation: none;
     }
   }
+  /* PWA open: cream screen until React splash mounts (see pwa-first-launch-splash) */
+  html.pwa-splash-pending {
+    background: var(--background);
+  }
+  html.pwa-splash-pending body {
+    background: inherit;
+  }
+  html.pwa-splash-pending body > *:not([data-pwa-splash]) {
+    visibility: hidden;
+  }
   /* Horizontal padding: content gutter + device safe area (notch, home bar sides) */
   .px-page {
     padding-left: max(1rem, env(safe-area-inset-left, 0px));

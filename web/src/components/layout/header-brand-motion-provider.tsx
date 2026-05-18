@@ -2,6 +2,7 @@
 
 import {
   createContext,
+  Suspense,
   useCallback,
   useContext,
   useEffect,
@@ -10,12 +11,14 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useMainScrollRotation } from "@/hooks/use-main-scroll-rotation";
 import { useTabNavigation } from "@/components/layout/tab-navigation-provider";
 
 const PULL_ROTATION_DEG = 300;
 const SPIN_DEG_PER_SEC = 420;
-const DATE_WOBBLE_MS = 520;
+const DATE_NAV_MIN_MS = 520;
+const DATE_NAV_MAX_MS = 8000;
 
 function prefersReducedMotion(): boolean {
   if (typeof window === "undefined") return false;
@@ -31,13 +34,48 @@ export interface PullBrandState {
 interface HeaderBrandMotionContextValue {
   rotation: number;
   transition: boolean;
-  dateWobble: boolean;
+  isDateNavigating: boolean;
   setPullState: (state: PullBrandState) => void;
-  triggerDateChange: () => void;
+  startDateNavigation: (targetDate: string) => void;
 }
 
 const HeaderBrandMotionContext =
   createContext<HeaderBrandMotionContextValue | null>(null);
+
+function DateNavigationSync({
+  dateNavigating,
+  dateTargetRef,
+  dateStartedRef,
+  onComplete,
+}: {
+  dateNavigating: boolean;
+  dateTargetRef: React.RefObject<string | null>;
+  dateStartedRef: React.RefObject<number>;
+  onComplete: () => void;
+}) {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    if (!dateNavigating || pathname !== "/") return;
+    const target = dateTargetRef.current;
+    if (!target || searchParams.get("date") !== target) return;
+
+    const elapsed = Date.now() - dateStartedRef.current;
+    const remaining = Math.max(0, DATE_NAV_MIN_MS - elapsed);
+    const timer = window.setTimeout(onComplete, remaining);
+    return () => window.clearTimeout(timer);
+  }, [
+    dateNavigating,
+    dateStartedRef,
+    dateTargetRef,
+    onComplete,
+    pathname,
+    searchParams,
+  ]);
+
+  return null;
+}
 
 export function HeaderBrandMotionProvider({
   children,
@@ -54,14 +92,21 @@ export function HeaderBrandMotionProvider({
     refreshing: false,
   });
   const [spinAngle, setSpinAngle] = useState(0);
-  const [dateWobble, setDateWobble] = useState(false);
+  const [dateNavigating, setDateNavigating] = useState(false);
   const [settleFrom, setSettleFrom] = useState<number | null>(null);
 
   const spinOriginRef = useRef(0);
   const wasSpinningRef = useRef(false);
+  const dateTargetRef = useRef<string | null>(null);
+  const dateStartedRef = useRef(0);
+
+  const completeDateNavigation = useCallback(() => {
+    dateTargetRef.current = null;
+    setDateNavigating(false);
+  }, []);
 
   const spinning =
-    !reducedMotion && !dateWobble && (isNavigating || pull.refreshing);
+    !reducedMotion && (isNavigating || pull.refreshing || dateNavigating);
 
   const pullRotation =
     scrollRotation +
@@ -102,39 +147,49 @@ export function HeaderBrandMotionProvider({
     wasSpinningRef.current = spinning;
   }, [spinning, spinAngle]);
 
+  useEffect(() => {
+    if (!dateNavigating) return;
+
+    const failSafe = window.setTimeout(completeDateNavigation, DATE_NAV_MAX_MS);
+    return () => window.clearTimeout(failSafe);
+  }, [completeDateNavigation, dateNavigating]);
+
   const rotation = useMemo(() => {
-    if (dateWobble) return scrollRotation;
     if (settleFrom !== null) return settleFrom;
     if (spinning) return spinAngle;
     return idleRotation;
-  }, [
-    dateWobble,
-    scrollRotation,
-    settleFrom,
-    spinning,
-    spinAngle,
-    idleRotation,
-  ]);
+  }, [settleFrom, spinning, spinAngle, idleRotation]);
 
-  /** CSS ease only when landing from tab/refresh spin — scroll uses hook lerp. */
-  const transition = !dateWobble && !pull.isDragging && settleFrom !== null;
+  const transition = !pull.isDragging && settleFrom !== null;
 
-  const triggerDateChange = useCallback(() => {
-    if (reducedMotion) return;
-    setDateWobble(true);
-    window.setTimeout(() => setDateWobble(false), DATE_WOBBLE_MS);
-  }, [reducedMotion]);
+  const startDateNavigation = useCallback(
+    (targetDate: string) => {
+      if (reducedMotion) return;
+      dateTargetRef.current = targetDate;
+      dateStartedRef.current = Date.now();
+      setDateNavigating(true);
+    },
+    [reducedMotion]
+  );
 
   const value: HeaderBrandMotionContextValue = {
     rotation,
     transition,
-    dateWobble,
+    isDateNavigating: dateNavigating,
     setPullState: setPull,
-    triggerDateChange,
+    startDateNavigation,
   };
 
   return (
     <HeaderBrandMotionContext.Provider value={value}>
+      <Suspense fallback={null}>
+        <DateNavigationSync
+          dateNavigating={dateNavigating}
+          dateTargetRef={dateTargetRef}
+          dateStartedRef={dateStartedRef}
+          onComplete={completeDateNavigation}
+        />
+      </Suspense>
       {children}
     </HeaderBrandMotionContext.Provider>
   );

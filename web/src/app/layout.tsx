@@ -1,11 +1,8 @@
 import type { Metadata, Viewport } from "next";
-import {
-  Geist,
-  Geist_Mono,
-  Noto_Sans,
-  Playfair_Display,
-} from "next/font/google";
+import { Geist, Geist_Mono, Playfair_Display } from "next/font/google";
+import { PwaFirstLaunchSplash } from "@/components/layout/pwa-first-launch-splash";
 import { StandaloneClass } from "@/components/layout/standalone-class";
+import { PWA_SPLASH_PENDING_SCRIPT } from "@/lib/pwa-launch-splash";
 import { Toaster } from "@/components/ui/toaster";
 import "./globals.css";
 import { cn } from "@/lib/utils";
@@ -83,7 +80,13 @@ export default function RootLayout({
         playfairDisplayHeading.variable
       )}
     >
+      <head>
+        <script
+          dangerouslySetInnerHTML={{ __html: PWA_SPLASH_PENDING_SCRIPT }}
+        />
+      </head>
       <body className="h-full w-full overflow-hidden">
+        <PwaFirstLaunchSplash />
         <StandaloneClass />
         {children}
         <Toaster />

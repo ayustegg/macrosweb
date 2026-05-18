@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { isPwaStandalone } from "@/lib/pwa-standalone";
 
 /** Añade .standalone en <html> para safe areas en PWA iOS (fallback a display-mode). */
 export function StandaloneClass() {
@@ -8,12 +9,9 @@ export function StandaloneClass() {
     const mq = window.matchMedia("(display-mode: standalone)");
 
     const apply = () => {
-      const iosStandalone =
-        "standalone" in navigator &&
-        (navigator as Navigator & { standalone?: boolean }).standalone === true;
       document.documentElement.classList.toggle(
         "standalone",
-        mq.matches || iosStandalone
+        isPwaStandalone()
       );
     };
 

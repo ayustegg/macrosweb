@@ -4,6 +4,11 @@ import { useState } from "react";
 import Link from "next/link";
 import { ChevronDown } from "lucide-react";
 import { MultiMacroRing } from "@/components/features/macros/multi-macro-ring";
+import {
+  COLLAPSE_GRID,
+  COLLAPSE_INNER,
+  collapseInnerClass,
+} from "@/lib/collapse-transition";
 import { cn } from "@/lib/utils";
 
 interface Summary {
@@ -27,6 +32,33 @@ interface Props {
 
 const COMPACT_RING = 52;
 const EXPANDED_RING = 200;
+
+const COMPACT_MACROS = [
+  {
+    key: "kcal" as const,
+    short: "kcal",
+    color: "var(--macro-kcal)",
+    track: "var(--macro-kcal-tint)",
+  },
+  {
+    key: "protein_g" as const,
+    short: "P",
+    color: "var(--macro-pro)",
+    track: "var(--macro-pro-tint)",
+  },
+  {
+    key: "carbs_g" as const,
+    short: "C",
+    color: "var(--macro-car)",
+    track: "var(--macro-car-tint)",
+  },
+  {
+    key: "fat_g" as const,
+    short: "G",
+    color: "var(--macro-fat)",
+    track: "var(--macro-fat-tint)",
+  },
+] as const;
 
 const LEGENDS = [
   {
@@ -83,7 +115,7 @@ export function DailyMacroSummary({ summary, goal }: Props) {
         }
       >
         <div
-          className="relative shrink-0"
+          className="shrink-0"
           style={{ width: COMPACT_RING, height: COMPACT_RING }}
         >
           <MultiMacroRing
@@ -92,11 +124,6 @@ export function DailyMacroSummary({ summary, goal }: Props) {
             size={COMPACT_RING}
             compact
           />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <span className="num text-foreground text-[13px] leading-none font-bold">
-              {kcalPct}%
-            </span>
-          </div>
         </div>
 
         <div className="min-w-0 flex-1">
@@ -108,11 +135,16 @@ export function DailyMacroSummary({ summary, goal }: Props) {
               / {fmt(goal.kcal)} kcal
             </span>
           </div>
-          <p className="text-muted-foreground mt-1 text-xs">
-            <span className="num text-foreground font-semibold">
-              {fmt(remaining)}
-            </span>{" "}
-            kcal restantes
+          <p className="text-muted-foreground mt-1 flex flex-wrap items-baseline gap-x-1.5 text-xs">
+            <span>
+              <span className="num text-foreground font-semibold">
+                {fmt(remaining)}
+              </span>{" "}
+              kcal restantes
+            </span>
+            <span className="text-muted-foreground/80 num text-[11px] font-medium">
+              · {kcalPct}% del objetivo
+            </span>
           </p>
           <div
             className="mt-2 h-1 overflow-hidden rounded-full"
@@ -126,14 +158,15 @@ export function DailyMacroSummary({ summary, goal }: Props) {
               }}
             />
           </div>
-          <div className="mt-2 flex gap-1.5">
-            {LEGENDS.map(({ key, label, color }) => (
+          <div className="mt-2 grid grid-cols-4 gap-1">
+            {COMPACT_MACROS.map(({ key, short, color }) => (
               <MacroChip
                 key={key}
-                label={label}
+                short={short}
                 value={summary[key]}
                 target={goal[key]}
                 color={color}
+                isKcal={key === "kcal"}
               />
             ))}
           </div>
@@ -141,7 +174,7 @@ export function DailyMacroSummary({ summary, goal }: Props) {
 
         <ChevronDown
           className={cn(
-            "text-muted-foreground size-5 shrink-0 transition-transform duration-200",
+            "text-muted-foreground size-5 shrink-0 transition-transform duration-350 ease-[cubic-bezier(0.32,0.72,0,1)]",
             expanded && "rotate-180"
           )}
           aria-hidden
@@ -150,11 +183,11 @@ export function DailyMacroSummary({ summary, goal }: Props) {
 
       <div
         className={cn(
-          "grid transition-[grid-template-rows] duration-200 ease-out",
+          COLLAPSE_GRID,
           expanded ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
         )}
       >
-        <div className="overflow-hidden">
+        <div className={cn(COLLAPSE_INNER, collapseInnerClass(expanded))}>
           <div className="border-border border-t px-[18px] pt-4 pb-4">
             <div
               className="relative mx-auto flex justify-center"
@@ -202,31 +235,40 @@ export function DailyMacroSummary({ summary, goal }: Props) {
 }
 
 function MacroChip({
-  label,
+  short,
   value,
   target,
   color,
+  isKcal = false,
 }: {
-  label: string;
+  short: string;
   value: number;
   target: number;
   color: string;
+  isKcal?: boolean;
 }) {
   const pct = Math.min(100, Math.round((value / (target || 1)) * 100));
+  const unit = isKcal ? "" : "g";
+
   return (
-    <span className="bg-muted/50 border-border/60 inline-flex min-w-0 flex-1 items-center gap-1 rounded-md border px-1.5 py-0.5">
-      <span
-        className="size-1.5 shrink-0 rounded-full"
-        style={{ background: color }}
-        aria-hidden
-      />
-      <span className="text-muted-foreground truncate text-[10px] font-medium">
-        {label.charAt(0)}
+    <span className="bg-muted/50 border-border/60 flex min-w-0 flex-col items-center gap-0.5 rounded-md border px-1 py-1">
+      <span className="inline-flex items-center gap-0.5">
+        <span
+          className="size-1.5 shrink-0 rounded-full"
+          style={{ background: color }}
+          aria-hidden
+        />
+        <span className="text-muted-foreground text-[9px] font-semibold tracking-wide uppercase">
+          {short}
+        </span>
       </span>
-      <span className="num text-foreground ml-auto text-[10px] font-semibold">
-        {Math.round(value)}
+      <span className="num text-foreground text-[11px] leading-none font-bold">
+        {isKcal ? Math.round(value).toLocaleString("es-ES") : Math.round(value)}
+        {unit}
       </span>
-      <span className="text-muted-foreground/70 num text-[9px]">{pct}%</span>
+      <span className="text-muted-foreground/70 num text-[9px] leading-none">
+        {pct}%
+      </span>
     </span>
   );
 }

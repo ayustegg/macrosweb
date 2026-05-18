@@ -5,6 +5,11 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
+import {
+  COLLAPSE_GRID,
+  COLLAPSE_INNER,
+  collapseInnerClass,
+} from "@/lib/collapse-transition";
 import { cn } from "@/lib/utils";
 import { useHeaderBrandMotion } from "@/components/layout/header-brand-motion-provider";
 
@@ -50,9 +55,9 @@ function formatLabel(dateStr: string): string {
   });
 }
 
-function formatSubline(dateStr: string, today: string): string {
+export function formatSubline(dateStr: string, today: string): string {
   const diff = diffDays(dateStr, today);
-  if (diff === 0) return "";
+  if (diff === 0) return "Hoy";
   if (diff === -1) return "Ayer";
   if (diff === -2) return "Anteayer";
   if (diff === 1) return "Mañana";
@@ -73,28 +78,31 @@ interface SwipeState {
 export function DayNavigator({ date, timezone = "UTC" }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { triggerDateChange } = useHeaderBrandMotion();
+  const { startDateNavigation } = useHeaderBrandMotion();
   const [calendarOpen, setCalendarOpen] = useState(false);
+  const [displayDate, setDisplayDate] = useState(date);
   const swipeRef = useRef<SwipeState | null>(null);
   const today = todayInTimezone(timezone);
-  const canGoForward = date < today;
+  const canGoForward = displayDate < today;
 
   const goTo = useCallback(
     (target: string) => {
-      if (target !== date) triggerDateChange();
+      if (target === displayDate) return;
+      setDisplayDate(target);
+      startDateNavigation(target);
       const params = new URLSearchParams(searchParams.toString());
       params.set("date", target);
       router.push(`?${params.toString()}`);
     },
-    [date, router, searchParams, triggerDateChange]
+    [displayDate, router, searchParams, startDateNavigation]
   );
 
   const goToRelative = useCallback(
     (n: number) => {
-      const target = addDays(date, n);
+      const target = addDays(displayDate, n);
       if (target <= today) goTo(target);
     },
-    [date, goTo, today]
+    [displayDate, goTo, today]
   );
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
@@ -131,8 +139,8 @@ export function DayNavigator({ date, timezone = "UTC" }: Props) {
     return () => window.removeEventListener("keydown", handleKey);
   }, [goToRelative]);
 
-  const label = formatLabel(date);
-  const subline = formatSubline(date, today);
+  const label = formatLabel(displayDate);
+  const subline = formatSubline(displayDate, today);
 
   return (
     <section
@@ -162,7 +170,12 @@ export function DayNavigator({ date, timezone = "UTC" }: Props) {
             {label}
           </span>
           {subline ? (
-            <span className="text-muted-foreground text-[11px] font-medium tracking-wide uppercase">
+            <span
+              className={cn(
+                "text-[11px] font-medium tracking-wide uppercase",
+                subline === "Hoy" ? "text-macro-kcal" : "text-muted-foreground"
+              )}
+            >
               {subline}
             </span>
           ) : null}
@@ -182,16 +195,16 @@ export function DayNavigator({ date, timezone = "UTC" }: Props) {
 
       <div
         className={cn(
-          "grid transition-[grid-template-rows] duration-200 ease-out",
+          COLLAPSE_GRID,
           calendarOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
         )}
       >
-        <div className="overflow-hidden">
+        <div className={cn(COLLAPSE_INNER, collapseInnerClass(calendarOpen))}>
           <div className="border-border border-t px-2 pt-1 pb-2">
             <Calendar
               className="w-full [--cell-size:--spacing(9)]"
               mode="single"
-              selected={new Date(date + "T12:00:00")}
+              selected={new Date(displayDate + "T12:00:00")}
               onSelect={(day) => {
                 if (!day) return;
                 const dateStr =

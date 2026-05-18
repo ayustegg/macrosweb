@@ -17,7 +17,7 @@ export function AppHeader({ initials }: Props) {
   const pathname = usePathname();
   const { isNavigating, startNavigation } = useTabNavigation();
   const prefetchTab = useTabPrefetch();
-  const { rotation, transition, dateWobble } = useHeaderBrandMotion();
+  const { rotation, transition } = useHeaderBrandMotion();
 
   const profileActive =
     pathname === "/profile" || pathname.startsWith("/profile/");
@@ -36,20 +36,13 @@ export function AppHeader({ initials }: Props) {
           onClick={() => startNavigation("/")}
         >
           <span
-            className={cn(
-              "inline-flex shrink-0 will-change-transform",
-              dateWobble && "animate-brand-face"
-            )}
-            style={
-              dateWobble
-                ? undefined
-                : {
-                    transform: `rotate(${rotation}deg)`,
-                    transition: transition
-                      ? "transform 0.78s cubic-bezier(0.22, 1, 0.36, 1)"
-                      : "none",
-                  }
-            }
+            className="inline-flex shrink-0 will-change-transform"
+            style={{
+              transform: `rotate(${rotation}deg)`,
+              transition: transition
+                ? "transform 0.78s cubic-bezier(0.22, 1, 0.36, 1)"
+                : "none",
+            }}
             aria-hidden
           >
             <BrandMark size={24} />

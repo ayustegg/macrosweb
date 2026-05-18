@@ -8,6 +8,8 @@ import { DailyMacroSummary } from "@/components/features/macros/daily-macro-summ
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { PullToRefresh } from "@/components/layout/pull-to-refresh";
+import { useHeaderBrandMotion } from "@/components/layout/header-brand-motion-provider";
+import { TodayContentSkeleton } from "@/components/features/meals/today-content-skeleton";
 import type { DayLogWithEntries, SlotTotals } from "@/features/meals/queries";
 import type { MealSlot } from "@/features/meals/types";
 import type { Entry } from "@/types/entry";
@@ -70,6 +72,7 @@ export function TodayPageClient({
   hasAnyEntry = false,
 }: Props) {
   const router = useRouter();
+  const { isDateNavigating } = useHeaderBrandMotion();
   const [dayLogData, setDayLogData] = useState(() => dayLog);
   const snapshotRef = useRef<DayLogWithEntries | null>(null);
 
@@ -130,19 +133,25 @@ export function TodayPageClient({
     <PullToRefresh onRefresh={() => router.refresh()}>
       <div className="px-page space-y-3.5 pt-2">
         <DayNavigator date={date} timezone={timezone} />
-        <DailyMacroSummary summary={summary} goal={goal} />
-        <div className="flex items-baseline justify-between px-1 pt-1">
-          <span className="section-label">Comidas del día</span>
-          <Link
-            href="/profile"
-            className="text-muted-foreground hover:text-foreground text-xs font-semibold"
-          >
-            Editar comidas
-          </Link>
-        </div>
+        {isDateNavigating ? (
+          <TodayContentSkeleton />
+        ) : (
+          <>
+            <DailyMacroSummary summary={summary} goal={goal} />
+            <div className="flex items-baseline justify-between px-1 pt-1">
+              <span className="section-label">Comidas del día</span>
+              <Link
+                href="/profile"
+                className="text-muted-foreground hover:text-foreground text-xs font-semibold"
+              >
+                Editar comidas
+              </Link>
+            </div>
+          </>
+        )}
       </div>
 
-      {hasEntries ? (
+      {!isDateNavigating && hasEntries ? (
         <div className="px-page">
           {mealSlots.map((slot) => {
             const slotData = dayLogData?.slots[slot.id];
@@ -164,11 +173,11 @@ export function TodayPageClient({
             );
           })}
         </div>
-      ) : hasAnyEntry ? (
+      ) : !isDateNavigating && hasAnyEntry ? (
         <EmptyDay date={date} />
-      ) : (
+      ) : !isDateNavigating ? (
         <FirstTimeWelcome />
-      )}
+      ) : null}
     </PullToRefresh>
   );
 }
