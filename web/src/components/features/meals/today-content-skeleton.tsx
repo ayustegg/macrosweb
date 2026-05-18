@@ -91,39 +91,21 @@ function MealsSectionHeaderSkeleton() {
   );
 }
 
-/** Mirrors `MealSlotCard` with one entry row + footer CTA. */
-function MealSlotSkeleton({ entries = 1 }: { entries?: number }) {
+/** Mirrors empty `MealSlotCard` — real slot name, placeholder body. */
+function MealSlotSkeleton({ name }: { name: string }) {
   return (
     <section className="border-border bg-card shadow-app-1 overflow-hidden rounded-[22px] border">
       <div className="flex items-center justify-between px-4 pt-3.5 pb-2.5">
         <div className="flex items-center gap-2.5">
           <Skeleton className="size-7 rounded-lg" />
-          <Skeleton className="h-[15px] w-[5.5rem] rounded-md" />
+          <h3 className="text-[15px] font-semibold">{name}</h3>
         </div>
         <Skeleton className="h-3.5 w-14 rounded-md" />
       </div>
 
-      {entries === 0 ? (
-        <Skeleton className="mx-4 mb-3 h-[13px] w-36 rounded-md" />
-      ) : (
-        <div>
-          {Array.from({ length: entries }, (_, i) => (
-            <div
-              key={i}
-              className="border-border/80 flex items-start justify-between gap-3 border-t px-4 py-2.5"
-            >
-              <div className="min-w-0 flex-1">
-                <Skeleton className="h-[14.5px] w-[72%] rounded-md" />
-                <div className="mt-1 flex items-center gap-1.5">
-                  <Skeleton className="h-[11px] w-12 rounded-sm" />
-                  <Skeleton className="h-[11px] w-16 rounded-sm" />
-                </div>
-              </div>
-              <Skeleton className="h-3.5 w-12 shrink-0 rounded-md" />
-            </div>
-          ))}
-        </div>
-      )}
+      <p className="text-muted-foreground px-4 pb-3 text-[13px] font-medium">
+        Nada registrado aún
+      </p>
 
       <div className="border-border/80 flex items-center justify-center gap-1.5 border-t py-3">
         <Skeleton className="size-4 rounded-sm" />
@@ -140,11 +122,16 @@ const EMPTY_SUMMARY: MacroTotals = {
   fat_g: 0,
 };
 
+interface MealSlotStub {
+  id: string;
+  name: string;
+}
+
 interface TodayContentSkeletonProps {
   summary?: MacroTotals;
   goal?: MacroTotals | null;
   animationKey?: string;
-  mealSlotCount?: number;
+  mealSlots?: MealSlotStub[];
 }
 
 /** Skeleton blocks for home tab — spacing from parent `gap-3.5`. */
@@ -152,10 +139,8 @@ export function TodayContentSkeleton({
   summary = EMPTY_SUMMARY,
   goal = null,
   animationKey = "default",
-  mealSlotCount = 3,
+  mealSlots = [],
 }: TodayContentSkeletonProps) {
-  const slots = Math.max(1, mealSlotCount);
-
   return (
     <div className={cn("flex flex-col gap-3.5", CONTENT_FADE_IN)}>
       <MacroSummarySkeleton
@@ -163,10 +148,14 @@ export function TodayContentSkeleton({
         goal={goal}
         animationKey={animationKey}
       />
-      <MealsSectionHeaderSkeleton />
-      {Array.from({ length: slots }, (_, i) => (
-        <MealSlotSkeleton key={i} entries={1} />
-      ))}
+      {mealSlots.length > 0 ? (
+        <>
+          <MealsSectionHeaderSkeleton />
+          {mealSlots.map((slot) => (
+            <MealSlotSkeleton key={slot.id} name={slot.name} />
+          ))}
+        </>
+      ) : null}
     </div>
   );
 }

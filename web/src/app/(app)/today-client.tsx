@@ -33,7 +33,6 @@ interface Props {
   mealSlots: MealSlot[];
   date: string;
   timezone?: string;
-  hasAnyEntry?: boolean;
 }
 
 function recalcSlotTotals(entries: Entry[]): SlotTotals {
@@ -75,7 +74,6 @@ export function TodayPageClient({
   mealSlots,
   date,
   timezone,
-  hasAnyEntry = false,
 }: Props) {
   const router = useRouter();
   const {
@@ -169,7 +167,7 @@ export function TodayPageClient({
     fat_g: dayLogData?.total_fat_g ?? 0,
   };
 
-  const hasEntries = dayLogData && Object.keys(dayLogData.slots).length > 0;
+  const hasMealSlots = mealSlots.length > 0;
 
   const ringPullPreview =
     !isTodayLoading && (pullIsDragging || pullRefreshing)
@@ -190,7 +188,7 @@ export function TodayPageClient({
               summary={summary}
               goal={goal}
               animationKey={`${date}-${isHomeRefreshing ? "refresh" : "nav"}`}
-              mealSlotCount={mealSlots.length}
+              mealSlots={mealSlots}
             />
           }
           b={
@@ -201,43 +199,43 @@ export function TodayPageClient({
                 pullPreviewProgress={ringPullPreview}
                 pullRefreshGeneration={pullRefreshGeneration}
               />
-              <MealsSectionHeader />
-              {hasEntries ? (
-                <div className="flex flex-col gap-3.5">
-                  {mealSlots.map((slot, index) => {
-                    const slotData = dayLogData?.slots[slot.id];
-                    return (
-                      <div
-                        key={slot.id}
-                        className={CONTENT_FADE_IN}
-                        style={{
-                          animationDelay: `${Math.min(index * 40, 160)}ms`,
-                        }}
-                      >
-                        <MealSlotCard
-                          slotId={slot.id}
-                          slotName={slot.name}
-                          slotData={
-                            slotData ?? {
-                              entries: [],
-                              totals: {
-                                kcal: 0,
-                                protein_g: 0,
-                                carbs_g: 0,
-                                fat_g: 0,
-                              },
+              {hasMealSlots ? (
+                <>
+                  <MealsSectionHeader />
+                  <div className="flex flex-col gap-3.5">
+                    {mealSlots.map((slot, index) => {
+                      const slotData = dayLogData?.slots[slot.id];
+                      return (
+                        <div
+                          key={slot.id}
+                          className={CONTENT_FADE_IN}
+                          style={{
+                            animationDelay: `${Math.min(index * 40, 160)}ms`,
+                          }}
+                        >
+                          <MealSlotCard
+                            slotId={slot.id}
+                            slotName={slot.name}
+                            slotData={
+                              slotData ?? {
+                                entries: [],
+                                totals: {
+                                  kcal: 0,
+                                  protein_g: 0,
+                                  carbs_g: 0,
+                                  fat_g: 0,
+                                },
+                              }
                             }
-                          }
-                          date={date}
-                          onDeleteEntry={handleDeleteEntry}
-                          onRollback={rollback}
-                        />
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : hasAnyEntry ? (
-                <EmptyDay date={date} />
+                            date={date}
+                            onDeleteEntry={handleDeleteEntry}
+                            onRollback={rollback}
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                </>
               ) : (
                 <FirstTimeWelcome />
               )}
@@ -258,36 +256,6 @@ function MealsSectionHeader() {
         className="text-muted-foreground hover:text-foreground text-xs font-semibold"
       >
         Editar comidas
-      </Link>
-    </div>
-  );
-}
-
-function EmptyDay({ date }: { date: string }) {
-  return (
-    <div className="flex flex-col items-center justify-center pt-4 pb-12 text-center">
-      <div className="bg-muted mb-5 grid h-32 w-32 place-items-center rounded-full">
-        <svg
-          viewBox="0 0 64 64"
-          className="text-muted-foreground h-16 w-16"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-        >
-          <circle cx="32" cy="32" r="24" strokeDasharray="4 3" />
-          <path d="M38 38 Q44 32 38 26" />
-          <path d="M26 38 Q20 32 26 26" />
-          <path d="M22 22 L19 19 M42 22 L45 19 M32 20 V15" />
-        </svg>
-      </div>
-      <h2 className="mb-1 text-lg font-semibold">Sin registros hoy</h2>
-      <p className="text-muted-foreground mb-6 max-w-64 text-sm">
-        Aún no has añadido nada. Busca un alimento para empezar a registrar tu
-        día.
-      </p>
-      <Link href={`/foods/search?date=${date}`}>
-        <Button size="lg">Empezar a registrar →</Button>
       </Link>
     </div>
   );
