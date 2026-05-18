@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { BrandMark } from "@/components/features/brand/brand-mark";
 import { APP_NAME } from "@/lib/app-config";
-import { useMainScrollRotation } from "@/hooks/use-main-scroll-rotation";
+import { useHeaderBrandMotion } from "@/components/layout/header-brand-motion-provider";
 import { useTabNavigation } from "@/components/layout/tab-navigation-provider";
 import { useTabPrefetch } from "@/hooks/use-tab-prefetch";
 import { cn } from "@/lib/utils";
@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 export function AppHeader() {
   const { isNavigating, startNavigation } = useTabNavigation();
   const prefetchTab = useTabPrefetch();
-  const scrollRotation = useMainScrollRotation();
+  const { rotation, transition, dateWobble } = useHeaderBrandMotion();
 
   return (
     <header
@@ -29,12 +29,17 @@ export function AppHeader() {
           <span
             className={cn(
               "inline-flex will-change-transform",
-              isNavigating && "animate-brand-spin"
+              dateWobble && "animate-brand-face"
             )}
             style={
-              isNavigating
+              dateWobble
                 ? undefined
-                : { transform: `rotate(${scrollRotation}deg)` }
+                : {
+                    transform: `rotate(${rotation}deg)`,
+                    transition: transition
+                      ? "transform 0.42s cubic-bezier(0.4, 0, 0.2, 1)"
+                      : "none",
+                  }
             }
             aria-hidden
           >

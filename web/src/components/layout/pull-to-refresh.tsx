@@ -3,6 +3,7 @@
 import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { usePullToRefresh } from "@/hooks/use-pull-to-refresh";
+import { useSyncHeaderPull } from "@/components/layout/header-brand-motion-provider";
 
 interface PullToRefreshProps {
   onRefresh: () => void | Promise<void>;
@@ -23,6 +24,12 @@ export function PullToRefresh({
     progress,
     isDragging,
   } = usePullToRefresh(onRefresh);
+
+  useSyncHeaderPull({
+    progress,
+    isDragging,
+    refreshing,
+  });
 
   const visible = pullDistance > 0 || refreshing;
 

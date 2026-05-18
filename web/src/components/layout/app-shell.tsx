@@ -1,6 +1,7 @@
 import { AppHeader } from "./app-header";
 import { BottomNav } from "./bottom-nav";
 import { TabNavigationProvider } from "./tab-navigation-provider";
+import { HeaderBrandMotionProvider } from "./header-brand-motion-provider";
 
 /**
  * Chrome compartido de la PWA (vive en app/(app)/layout.tsx).
@@ -10,11 +11,13 @@ import { TabNavigationProvider } from "./tab-navigation-provider";
 export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <TabNavigationProvider>
-      <div className="app-shell bg-background">
-        <AppHeader />
-        <main className="app-shell-main w-full">{children}</main>
-        <BottomNav />
-      </div>
+      <HeaderBrandMotionProvider>
+        <div className="app-shell bg-background">
+          <AppHeader />
+          <main className="app-shell-main w-full">{children}</main>
+          <BottomNav />
+        </div>
+      </HeaderBrandMotionProvider>
     </TabNavigationProvider>
   );
 }

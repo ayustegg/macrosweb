@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
+import { useHeaderBrandMotion } from "@/components/layout/header-brand-motion-provider";
 
 interface Props {
   date: string;
@@ -72,6 +73,7 @@ interface SwipeState {
 export function DayNavigator({ date, timezone = "UTC" }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { triggerDateChange } = useHeaderBrandMotion();
   const [calendarOpen, setCalendarOpen] = useState(false);
   const swipeRef = useRef<SwipeState | null>(null);
   const today = todayInTimezone(timezone);
@@ -79,11 +81,12 @@ export function DayNavigator({ date, timezone = "UTC" }: Props) {
 
   const goTo = useCallback(
     (target: string) => {
+      if (target !== date) triggerDateChange();
       const params = new URLSearchParams(searchParams.toString());
       params.set("date", target);
       router.push(`?${params.toString()}`);
     },
-    [router, searchParams]
+    [date, router, searchParams, triggerDateChange]
   );
 
   const goToRelative = useCallback(
