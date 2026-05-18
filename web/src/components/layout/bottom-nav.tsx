@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, Search, Utensils, User } from "lucide-react";
+import { useTabNavigation } from "@/components/layout/tab-navigation-provider";
 
 const items = [
   { href: "/", label: "Hoy", Icon: Home },
@@ -14,6 +15,7 @@ const items = [
 /** Bottom nav como footer del app shell (flujo del grid, no position:fixed). */
 export function BottomNav() {
   const pathname = usePathname();
+  const { startNavigation } = useTabNavigation();
 
   return (
     <nav
@@ -34,6 +36,9 @@ export function BottomNav() {
             <Link
               key={href}
               href={href}
+              onClick={() => {
+                if (!active) startNavigation(href);
+              }}
               className={`flex flex-col items-center justify-center gap-0.5 transition-colors ${
                 active ? "text-foreground" : "text-muted-foreground"
               }`}
