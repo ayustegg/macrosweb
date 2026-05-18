@@ -1,6 +1,22 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
-  <rect width="192" height="192" fill="#ffffff"/>
-  <rect width="192" height="192" fill="#3b82f6" opacity="0.1"/>
-  <circle cx="96" cy="96" r="70" fill="#3b82f6"/>
-  <text x="96" y="110" font-size="80" font-weight="bold" fill="#ffffff" text-anchor="middle">M</text>
+  <rect width="192" height="192" fill="#f7f6f4"/>
+  <g transform="rotate(-45 96 96)">
+    
+    <g transform="rotate(-90 96 96)">
+      <circle cx="96" cy="96" r="69.23743999999999" fill="none" stroke="oklch(0.66 0.18 16)" stroke-width="9.28512" opacity="0.2" />
+      <circle cx="96" cy="96" r="69.23743999999999" fill="none" stroke="oklch(0.66 0.18 16)" stroke-width="9.28512" stroke-linecap="round" stroke-dasharray="103.5375364401053 332.4941292746229" stroke-dashoffset="0" />
+    </g>
+    <g transform="rotate(-90 96 96)">
+      <circle cx="96" cy="96" r="57.35248639999999" fill="none" stroke="oklch(0.62 0.16 252)" stroke-width="9.28512" opacity="0.2" />
+      <circle cx="96" cy="96" r="57.35248639999999" fill="none" stroke="oklch(0.62 0.16 252)" stroke-width="9.28512" stroke-linecap="round" stroke-dasharray="85.76479937112988 275.5915005075671" stroke-dashoffset="-90.08907496967424" />
+    </g>
+    <g transform="rotate(-90 96 96)">
+      <circle cx="96" cy="96" r="45.467532799999994" fill="none" stroke="oklch(0.74 0.15 74)" stroke-width="9.28512" opacity="0.2" />
+      <circle cx="96" cy="96" r="45.467532799999994" fill="none" stroke="oklch(0.74 0.15 74)" stroke-width="9.28512" stroke-linecap="round" stroke-dasharray="67.99206230215448 218.6888717405114" stroke-dashoffset="-142.84046702133293" />
+    </g>
+    <g transform="rotate(-90 96 96)">
+      <circle cx="96" cy="96" r="33.5825792" fill="none" stroke="oklch(0.58 0.18 295)" stroke-width="9.28512" opacity="0.2" />
+      <circle cx="96" cy="96" r="33.5825792" fill="none" stroke="oklch(0.58 0.18 295)" stroke-width="9.28512" stroke-linecap="round" stroke-dasharray="50.21932523317907 161.7862429734557" stroke-dashoffset="-158.25417615497608" />
+    </g>
+  </g>
 </svg>

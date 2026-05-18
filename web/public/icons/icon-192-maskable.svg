@@ -1,4 +1,22 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
-  <rect width="192" height="192" fill="#3b82f6"/>
-  <text x="96" y="110" font-size="80" font-weight="bold" fill="#ffffff" text-anchor="middle">M</text>
+  <rect width="192" height="192" fill="#f7f6f4"/>
+  <g transform="rotate(-45 96 96)">
+    
+    <g transform="rotate(-90 96 96)">
+      <circle cx="96" cy="96" r="63.83456000000001" fill="none" stroke="oklch(0.66 0.18 16)" stroke-width="8.57088" opacity="0.2" />
+      <circle cx="96" cy="96" r="63.83456000000001" fill="none" stroke="oklch(0.66 0.18 16)" stroke-width="8.57088" stroke-linecap="round" stroke-dasharray="95.45807993678116 306.6262895454927" stroke-dashoffset="0" />
+    </g>
+    <g transform="rotate(-90 96 96)">
+      <circle cx="96" cy="96" r="52.76368000000001" fill="none" stroke="oklch(0.62 0.16 252)" stroke-width="8.57088" opacity="0.2" />
+      <circle cx="96" cy="96" r="52.76368000000001" fill="none" stroke="oklch(0.62 0.16 252)" stroke-width="8.57088" stroke-linecap="round" stroke-dasharray="78.90270698503666 253.62127194368878" stroke-dashoffset="-82.88099473218136" />
+    </g>
+    <g transform="rotate(-90 96 96)">
+      <circle cx="96" cy="96" r="41.692800000000005" fill="none" stroke="oklch(0.74 0.15 74)" stroke-width="8.57088" opacity="0.2" />
+      <circle cx="96" cy="96" r="41.692800000000005" fill="none" stroke="oklch(0.74 0.15 74)" stroke-width="8.57088" stroke-linecap="round" stroke-dasharray="62.34733403329215 200.61625434188494" stroke-dashoffset="-130.98179418758855" />
+    </g>
+    <g transform="rotate(-90 96 96)">
+      <circle cx="96" cy="96" r="30.62192000000001" fill="none" stroke="oklch(0.58 0.18 295)" stroke-width="8.57088" opacity="0.2" />
+      <circle cx="96" cy="96" r="30.62192000000001" fill="none" stroke="oklch(0.58 0.18 295)" stroke-width="8.57088" stroke-linecap="round" stroke-dasharray="45.79196108154765 147.61123674008113" stroke-dashoffset="-144.30239836622158" />
+    </g>
+  </g>
 </svg>
