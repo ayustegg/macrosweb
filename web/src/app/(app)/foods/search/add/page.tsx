@@ -2,8 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ChevronLeft } from "lucide-react";
 import { toast } from "sonner";
+import { SubPage } from "@/components/layout/page-chrome";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -88,6 +88,7 @@ export default function AddFoodEntryPage() {
   }, [food, qtyNum, unit]);
 
   const slotName = slots.find((s) => s.id === slotId)?.name ?? "";
+  const backHref = date ? `/today?date=${date}` : "/today";
 
   async function handleSubmit() {
     if (!food) return;
@@ -117,8 +118,7 @@ export default function AddFoodEntryPage() {
       }
 
       toast.success(`Añadido a ${slotName}`);
-      const target = date ? `/today?date=${date}` : "/today";
-      router.push(target);
+      router.push(backHref);
     } finally {
       setSubmitting(false);
     }
@@ -126,52 +126,42 @@ export default function AddFoodEntryPage() {
 
   if (loading) {
     return (
-      <div className="mx-auto max-w-md space-y-6 px-4 pt-4 pb-24">
-        <div className="h-8 w-32 animate-pulse rounded bg-zinc-200 dark:bg-zinc-800" />
+      <SubPage title="Añadir alimento" backHref={backHref}>
         <div className="space-y-4">
           {[1, 2, 3].map((i) => (
             <div
               key={i}
-              className="h-16 animate-pulse rounded-xl bg-zinc-100 dark:bg-zinc-900"
+              className="bg-muted h-16 animate-pulse rounded-[18px]"
             />
           ))}
         </div>
-      </div>
+      </SubPage>
     );
   }
 
   if (!food) {
     return (
-      <div className="mx-auto max-w-md px-4 pt-8 text-center">
-        <p className="text-sm text-zinc-500">Alimento no encontrado.</p>
+      <SubPage title="Añadir alimento" backHref={backHref}>
+        <p className="text-muted-foreground text-center text-sm">
+          Alimento no encontrado.
+        </p>
         <Button
           variant="outline"
-          className="mt-4"
-          onClick={() => router.back()}
+          className="mt-4 w-full"
+          onClick={() => router.push(backHref)}
         >
           Volver
         </Button>
-      </div>
+      </SubPage>
     );
   }
 
   return (
-    <div className="mx-auto max-w-md space-y-6 px-4 pt-4 pb-24">
-      <div className="flex items-center gap-2">
-        <Button
-          variant="ghost"
-          size="icon-xs"
-          onClick={() => router.back()}
-          aria-label="Volver"
-        >
-          <ChevronLeft className="h-5 w-5" />
-        </Button>
-        <div className="min-w-0">
-          <h1 className="truncate text-lg font-semibold">{food.name}</h1>
-          {food.brand && <p className="text-xs text-zinc-500">{food.brand}</p>}
-        </div>
-      </div>
-
+    <SubPage
+      title={food.name}
+      backHref={backHref}
+      subtitle={food.brand ?? undefined}
+    >
       <div className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="add-quantity">Cantidad</Label>
@@ -222,16 +212,20 @@ export default function AddFoodEntryPage() {
         </div>
 
         {preview && (
-          <div className="rounded-lg border bg-zinc-50 p-3 dark:bg-zinc-900">
-            <p className="mb-1.5 text-xs font-medium text-zinc-500 uppercase">
+          <div className="bg-muted/30 border-border rounded-[14px] border p-3">
+            <p className="text-muted-foreground mb-1.5 text-xs font-medium uppercase">
               {qtyNum}{" "}
               {availableUnits.find((u) => u.value === unit)?.label ?? unit}
             </p>
             <div className="flex gap-4 text-sm">
               <span className="font-medium">{preview.kcal} kcal</span>
-              <span className="text-zinc-500">P {preview.protein_g}g</span>
-              <span className="text-zinc-500">C {preview.carbs_g}g</span>
-              <span className="text-zinc-500">G {preview.fat_g}g</span>
+              <span className="text-muted-foreground">
+                P {preview.protein_g}g
+              </span>
+              <span className="text-muted-foreground">
+                C {preview.carbs_g}g
+              </span>
+              <span className="text-muted-foreground">G {preview.fat_g}g</span>
             </div>
           </div>
         )}
@@ -248,6 +242,6 @@ export default function AddFoodEntryPage() {
               : "Añadir"}
         </Button>
       </div>
-    </div>
+    </SubPage>
   );
 }

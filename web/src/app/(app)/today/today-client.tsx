@@ -114,30 +114,6 @@ export function TodayPageClient({
     snapshotRef.current = dayLogData;
   }, [dayLogData]);
 
-  const handleUpdateEntry = useCallback(
-    (entry: Entry) => {
-      saveSnapshot();
-      setDayLogData((prev) => {
-        if (!prev) return prev;
-        const newSlots = { ...prev.slots };
-        for (const [slotId, slotData] of Object.entries(newSlots)) {
-          const idx = slotData.entries.findIndex((e) => e.id === entry.id);
-          if (idx !== -1) {
-            const newEntries = [...slotData.entries];
-            newEntries[idx] = entry;
-            newSlots[slotId] = {
-              entries: newEntries,
-              totals: recalcSlotTotals(newEntries),
-            };
-            break;
-          }
-        }
-        return { ...prev, slots: newSlots, ...recalcDailyTotals(newSlots) };
-      });
-    },
-    [saveSnapshot]
-  );
-
   const handleDeleteEntry = useCallback(
     (entryId: string) => {
       saveSnapshot();
@@ -169,59 +145,6 @@ export function TodayPageClient({
     [saveSnapshot]
   );
 
-  const handleMoveEntry = useCallback(
-    (entryId: string, newSlotId: string) => {
-      saveSnapshot();
-      setDayLogData((prev) => {
-        if (!prev) return prev;
-        let movedEntry: Entry | undefined;
-        const newSlots = { ...prev.slots };
-
-        // Remove from source slot
-        for (const [slotId, slotData] of Object.entries(newSlots)) {
-          const idx = slotData.entries.findIndex((e) => e.id === entryId);
-          if (idx !== -1) {
-            movedEntry = slotData.entries[idx];
-            const newEntries = slotData.entries.filter((e) => e.id !== entryId);
-            if (newEntries.length === 0) {
-              delete newSlots[slotId];
-            } else {
-              newSlots[slotId] = {
-                entries: newEntries,
-                totals: recalcSlotTotals(newEntries),
-              };
-            }
-            break;
-          }
-        }
-
-        // Add to target slot
-        if (movedEntry) {
-          const updated = { ...movedEntry, meal_slot_id: newSlotId };
-          const target = newSlots[newSlotId];
-          if (target) {
-            newSlots[newSlotId] = {
-              entries: [...target.entries, updated],
-              totals: recalcSlotTotals([...target.entries, updated]),
-            };
-          } else {
-            newSlots[newSlotId] = {
-              entries: [updated],
-              totals: recalcSlotTotals([updated]),
-            };
-          }
-        }
-
-        return {
-          ...prev,
-          slots: newSlots,
-          ...recalcDailyTotals(newSlots),
-        };
-      });
-    },
-    [saveSnapshot]
-  );
-
   const summary = {
     kcal: dayLogData?.total_kcal ?? 0,
     protein_g: dayLogData?.total_protein_g ?? 0,
@@ -239,7 +162,10 @@ export function TodayPageClient({
         </div>
       )}
 
-      <div className="px-page space-y-3.5 pt-4">
+      <div className="px-page space-y-3.5 pt-2">
+        <h1 className="text-[28px] leading-tight font-bold tracking-tight">
+          Hoy
+        </h1>
         <DayNavigator date={date} timezone={timezone} />
         <DailyMacroSummary summary={summary} goal={goal} />
         <div className="flex items-baseline justify-between px-1 pt-1">
@@ -269,10 +195,7 @@ export function TodayPageClient({
                   }
                 }
                 date={date}
-                allSlots={slots}
-                onUpdateEntry={handleUpdateEntry}
                 onDeleteEntry={handleDeleteEntry}
-                onMoveEntry={handleMoveEntry}
                 onRollback={rollback}
               />
             );

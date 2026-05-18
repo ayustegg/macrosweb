@@ -14,24 +14,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { ConfirmPanel } from "@/components/layout/page-chrome";
 import {
   Select,
   SelectContent,
@@ -61,10 +44,9 @@ export function MealSlotList({ initialSlots }: Props) {
   const [deleteTarget, setDeleteTarget] = useState<MealSlot | null>(null);
   const [migrateToId, setMigrateToId] = useState("");
   const [deleting, setDeleting] = useState(false);
-  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [needsMigration, setNeedsMigration] = useState(false);
   const editRef = useRef<HTMLInputElement>(null);
 
-  // Focus input when editing starts
   useEffect(() => {
     if (editingId && editRef.current) {
       editRef.current.focus();
@@ -124,7 +106,6 @@ export function MealSlotList({ initialSlots }: Props) {
     const result = await reorderSlots(formData);
     if (!result.ok) {
       toast.error(result.error);
-      return;
     }
   }, []);
 
@@ -170,10 +151,17 @@ export function MealSlotList({ initialSlots }: Props) {
     [slots, handleReorder]
   );
 
+  const clearDelete = useCallback(() => {
+    setDeleteTarget(null);
+    setMigrateToId("");
+    setNeedsMigration(false);
+    setDeleting(false);
+  }, []);
+
   const handleDeleteClick = useCallback((slot: MealSlot) => {
     setDeleteTarget(slot);
     setMigrateToId("");
-    setConfirmDelete(false);
+    setNeedsMigration(false);
   }, []);
 
   const handleDeleteConfirm = useCallback(async () => {
@@ -190,19 +178,16 @@ export function MealSlotList({ initialSlots }: Props) {
       return;
     }
 
-    // If has entries but no migration was sent, show migration dialog
     if (result.data?.hasEntries && !migrateToId) {
-      setConfirmDelete(true);
+      setNeedsMigration(true);
       setDeleting(false);
       return;
     }
 
     setSlots((prev) => prev.filter((s) => s.id !== deleteTarget.id));
-    setDeleteTarget(null);
-    setMigrateToId("");
-    setDeleting(false);
+    clearDelete();
     toast.success("Momento eliminado");
-  }, [deleteTarget, migrateToId]);
+  }, [deleteTarget, migrateToId, clearDelete]);
 
   const handleMigrateAndDelete = useCallback(async () => {
     if (!deleteTarget || !migrateToId) return;
@@ -219,12 +204,9 @@ export function MealSlotList({ initialSlots }: Props) {
     }
 
     setSlots((prev) => prev.filter((s) => s.id !== deleteTarget.id));
-    setDeleteTarget(null);
-    setMigrateToId("");
-    setConfirmDelete(false);
-    setDeleting(false);
+    clearDelete();
     toast.success("Entradas migradas y momento eliminado");
-  }, [deleteTarget, migrateToId]);
+  }, [deleteTarget, migrateToId, clearDelete]);
 
   return (
     <div className="space-y-3">
@@ -237,7 +219,6 @@ export function MealSlotList({ initialSlots }: Props) {
           onDragOver={(e) => handleDragOver(e, i)}
           onDrop={handleDrop}
         >
-          {/* Drag handle */}
           <button
             type="button"
             className="text-muted-foreground hover:text-foreground cursor-grab touch-none"
@@ -246,7 +227,6 @@ export function MealSlotList({ initialSlots }: Props) {
             <GripVertical className="h-4 w-4" />
           </button>
 
-          {/* Reorder buttons */}
           <div className="flex flex-col gap-0.5">
             <button
               type="button"
@@ -268,7 +248,6 @@ export function MealSlotList({ initialSlots }: Props) {
             </button>
           </div>
 
-          {/* Name */}
           <div className="flex-1">
             {editingId === slot.id ? (
               <div className="flex items-center gap-1">
@@ -311,7 +290,6 @@ export function MealSlotList({ initialSlots }: Props) {
             )}
           </div>
 
-          {/* Delete */}
           {slots.length > 1 && editingId !== slot.id && (
             <Button
               variant="ghost"
@@ -326,7 +304,6 @@ export function MealSlotList({ initialSlots }: Props) {
         </div>
       ))}
 
-      {/* Add new slot */}
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -351,97 +328,69 @@ export function MealSlotList({ initialSlots }: Props) {
         </Button>
       </form>
 
-      {/* Delete confirmation / migration dialog */}
-      <AlertDialog
-        open={!!deleteTarget && !confirmDelete}
-        onOpenChange={(open) => {
-          if (!open) setDeleteTarget(null);
-        }}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>
-              Eliminar &ldquo;{deleteTarget?.name}&rdquo;
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              {slots.length <= 1
-                ? "Debe haber al menos un momento del día. No se puede eliminar el último."
-                : "Se eliminará este momento del día."}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>
-              <Button variant="outline">Cancelar</Button>
-            </AlertDialogCancel>
-            {slots.length > 1 && (
-              <AlertDialogAction onClick={handleDeleteConfirm}>
-                <Button disabled={deleting}>
-                  {deleting ? "Eliminando..." : "Eliminar"}
-                </Button>
-              </AlertDialogAction>
-            )}
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {/* Migration dialog when slot has entries */}
-      <Dialog
-        open={confirmDelete}
-        onOpenChange={(open) => {
-          if (!open) {
-            setConfirmDelete(false);
-            setDeleteTarget(null);
+      {deleteTarget && !needsMigration && (
+        <ConfirmPanel
+          title={`Eliminar «${deleteTarget.name}»`}
+          description={
+            slots.length <= 1
+              ? "Debe haber al menos un momento del día. No se puede eliminar el último."
+              : "Se eliminará este momento del día."
           }
-        }}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Migrar entradas</DialogTitle>
-            <DialogDescription>
-              Este momento tiene entradas registradas. Elige a qué momento
-              moverlas o cancela.
-            </DialogDescription>
-          </DialogHeader>
+          confirmLabel="Eliminar"
+          destructive
+          loading={deleting}
+          onCancel={clearDelete}
+          onConfirm={handleDeleteConfirm}
+        />
+      )}
 
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Mover entradas a...</label>
-              <Select value={migrateToId} onValueChange={setMigrateToId}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Seleccionar..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {slots
-                    .filter((s) => s.id !== deleteTarget?.id)
-                    .map((s) => (
-                      <SelectItem key={s.id} value={s.id}>
-                        {s.name}
-                      </SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
-            </div>
+      {deleteTarget && needsMigration && (
+        <div className="border-border bg-card shadow-app-1 space-y-4 rounded-[18px] border p-4">
+          <div>
+            <h3 className="text-[15px] font-semibold">Migrar entradas</h3>
+            <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
+              «{deleteTarget.name}» tiene entradas registradas. Elige a qué
+              momento moverlas antes de eliminarlo.
+            </p>
           </div>
-
-          <DialogFooter>
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Mover entradas a…</label>
+            <Select value={migrateToId} onValueChange={setMigrateToId}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Seleccionar..." />
+              </SelectTrigger>
+              <SelectContent>
+                {slots
+                  .filter((s) => s.id !== deleteTarget.id)
+                  .map((s) => (
+                    <SelectItem key={s.id} value={s.id}>
+                      {s.name}
+                    </SelectItem>
+                  ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex gap-2">
             <Button
+              type="button"
               variant="outline"
-              onClick={() => {
-                setConfirmDelete(false);
-                setDeleteTarget(null);
-              }}
+              className="flex-1"
+              onClick={clearDelete}
+              disabled={deleting}
             >
               Cancelar
             </Button>
             <Button
+              type="button"
+              className="flex-1"
               onClick={handleMigrateAndDelete}
               disabled={!migrateToId || deleting}
             >
-              {deleting ? "Migrando..." : "Migrar y eliminar"}
+              {deleting ? "Migrando…" : "Migrar y eliminar"}
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

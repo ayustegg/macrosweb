@@ -1,10 +1,8 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { Plus, Trash2, Utensils } from "lucide-react";
 import { toast } from "sonner";
-import { EntryActions } from "@/features/meals/components/entry-actions";
 import { deleteEntry } from "@/features/meals/actions";
 import { useSwipeDelete } from "@/hooks/use-swipe-delete";
 import type { Entry } from "@/types/entry";
@@ -43,9 +41,7 @@ interface Props {
   slotData: SlotEntries;
   date: string;
   allSlots?: MealSlot[];
-  onUpdateEntry?: (entry: Entry) => void;
   onDeleteEntry?: (entryId: string) => void;
-  onMoveEntry?: (entryId: string, newSlotId: string) => void;
   onRollback?: () => void;
 }
 
@@ -54,88 +50,65 @@ export function MealSlotCard({
   slotName,
   slotData,
   date,
-  allSlots = [],
-  onUpdateEntry,
   onDeleteEntry,
-  onMoveEntry,
   onRollback,
 }: Props) {
-  const [editingEntry, setEditingEntry] = useState<Entry | null>(null);
-
   return (
-    <>
-      <div
-        className="overflow-hidden rounded-[22px] border border-border bg-card shadow-app-1"
-        style={{ marginBottom: "var(--slot-gap)" }}
-      >
-        <div className="flex items-center justify-between px-4 pt-3.5 pb-2.5">
-          <div className="flex items-center gap-2.5">
-            <div className="flex size-7 items-center justify-center rounded-lg bg-secondary text-accent-foreground">
-              <Utensils className="size-4" strokeWidth={1.75} />
-            </div>
-            <h3 className="text-[15px] font-semibold">{slotName}</h3>
+    <div
+      className="border-border bg-card shadow-app-1 overflow-hidden rounded-[22px] border"
+      style={{ marginBottom: "var(--slot-gap)" }}
+    >
+      <div className="flex items-center justify-between px-4 pt-3.5 pb-2.5">
+        <div className="flex items-center gap-2.5">
+          <div className="bg-secondary text-accent-foreground flex size-7 items-center justify-center rounded-lg">
+            <Utensils className="size-4" strokeWidth={1.75} />
           </div>
-          <span className="num text-sm font-semibold text-muted-foreground">
-            {Math.round(slotData.totals.kcal)}{" "}
-            <span className="font-medium">kcal</span>
-          </span>
+          <h3 className="text-[15px] font-semibold">{slotName}</h3>
         </div>
-
-        {slotData.entries.length === 0 ? (
-          <p className="px-4 pb-3 text-[13px] font-medium text-muted-foreground">
-            Nada registrado aún
-          </p>
-        ) : (
-          <div>
-            {slotData.entries.map((entry) => (
-              <SwipeableEntry
-                key={entry.id}
-                entry={entry}
-                onDelete={onDeleteEntry}
-                onEdit={() => setEditingEntry(entry)}
-                onRollback={onRollback}
-              />
-            ))}
-          </div>
-        )}
-
-        <Link
-          href={`/foods/search?slot=${slotId}&date=${date}`}
-          className="flex w-full items-center justify-center gap-1.5 border-t border-border/80 py-3 text-[13.5px] font-semibold text-accent-foreground transition-colors hover:bg-secondary/50"
-        >
-          <Plus className="size-4" />
-          Añadir alimento
-        </Link>
+        <span className="num text-muted-foreground text-sm font-semibold">
+          {Math.round(slotData.totals.kcal)}{" "}
+          <span className="font-medium">kcal</span>
+        </span>
       </div>
 
-      {editingEntry && (
-        <EntryActions
-          key={editingEntry.id}
-          entry={editingEntry}
-          allSlots={allSlots}
-          open={!!editingEntry}
-          onOpenChange={(open) => {
-            if (!open) setEditingEntry(null);
-          }}
-          onUpdate={onUpdateEntry}
-          onDelete={onDeleteEntry}
-          onMove={onMoveEntry}
-          onRollback={onRollback}
-        />
+      {slotData.entries.length === 0 ? (
+        <p className="text-muted-foreground px-4 pb-3 text-[13px] font-medium">
+          Nada registrado aún
+        </p>
+      ) : (
+        <div>
+          {slotData.entries.map((entry) => (
+            <SwipeableEntry
+              key={entry.id}
+              entry={entry}
+              date={date}
+              onDelete={onDeleteEntry}
+              onRollback={onRollback}
+            />
+          ))}
+        </div>
       )}
-    </>
+
+      <Link
+        href={`/foods/search?slot=${slotId}&date=${date}`}
+        className="border-border/80 text-accent-foreground hover:bg-secondary/50 flex w-full items-center justify-center gap-1.5 border-t py-3 text-[13.5px] font-semibold transition-colors"
+      >
+        <Plus className="size-4" />
+        Añadir alimento
+      </Link>
+    </div>
   );
 }
 
 function SwipeableEntry({
   entry,
+  date,
   onDelete,
-  onEdit,
   onRollback,
 }: {
   entry: Entry;
+  date: string;
   onDelete?: (entryId: string) => void;
-  onEdit: () => void;
   onRollback?: () => void;
 }) {
   const { offsetX, handlers } = useSwipeDelete(async () => {
@@ -147,29 +120,33 @@ function SwipeableEntry({
     }
   }, 88);
 
+  const editHref = `/today/entry/${entry.id}/edit?date=${date}`;
+
   return (
     <div className="relative overflow-hidden" {...handlers}>
       <div className="bg-destructive absolute inset-0 flex items-stretch justify-end">
-        <div className="flex w-[88px] flex-col items-center justify-center gap-1 text-destructive-foreground">
+        <div className="text-destructive-foreground flex w-[88px] flex-col items-center justify-center gap-1">
           <Trash2 className="h-[18px] w-[18px]" />
           <span className="text-[13px] font-semibold">Borrar</span>
         </div>
       </div>
 
-      <button
-        type="button"
-        className="relative flex w-full items-start justify-between gap-3 border-t border-border/80 bg-card px-4 py-2.5 text-left transition-transform"
-        onClick={onEdit}
+      <Link
+        href={editHref}
+        className="border-border/80 bg-card active:bg-secondary/30 relative flex w-full items-start justify-between gap-3 border-t px-4 py-2.5 text-left transition-transform"
         style={{
           transform: `translateX(${offsetX}px)`,
-          transition: offsetX === 0 ? "transform 250ms cubic-bezier(0.2,0.7,0.3,1)" : "none",
+          transition:
+            offsetX === 0
+              ? "transform 250ms cubic-bezier(0.2,0.7,0.3,1)"
+              : "none",
         }}
       >
         <div className="min-w-0 flex-1">
-          <p className="truncate text-[14.5px] font-medium leading-snug">
+          <p className="truncate text-[14.5px] leading-snug font-medium">
             {entry.source_name}
           </p>
-          <div className="mt-1 flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground">
+          <div className="text-muted-foreground mt-1 flex items-center gap-1.5 text-[11px] font-medium">
             <span className="num">
               {entry.quantity} {entry.unit === "serving" ? "porc" : entry.unit}
             </span>
@@ -179,9 +156,9 @@ function SwipeableEntry({
         </div>
         <span className="num shrink-0 text-sm font-semibold whitespace-nowrap">
           {Math.round(entry.kcal)}{" "}
-          <span className="font-medium text-muted-foreground">kcal</span>
+          <span className="text-muted-foreground font-medium">kcal</span>
         </span>
-      </button>
+      </Link>
     </div>
   );
 }

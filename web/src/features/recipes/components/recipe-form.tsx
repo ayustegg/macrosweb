@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { createRecipe, addRecipeItem } from "@/features/recipes/actions";
-import { IngredientPicker, type IngredientDraft } from "./ingredient-picker";
+import { consumePendingIngredients } from "@/lib/recipe-draft";
 import type { Food } from "@/types/food";
 
 const formSchema = z.object({
@@ -74,8 +74,14 @@ function calcMacros(
 export function RecipeForm() {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const [pickerOpen, setPickerOpen] = useState(false);
   const [ingredients, setIngredients] = useState<IngredientRow[]>([]);
+
+  useEffect(() => {
+    const pending = consumePendingIngredients();
+    if (pending.length > 0) {
+      setIngredients((prev) => [...prev, ...pending]);
+    }
+  }, []);
 
   const {
     register,
@@ -94,10 +100,6 @@ export function RecipeForm() {
 
   const servings = watch("servings") || 1;
   const perServing = calcMacros(ingredients, servings);
-
-  function handleAddIngredient(draft: IngredientDraft) {
-    setIngredients((prev) => [...prev, draft]);
-  }
 
   function handleRemoveIngredient(index: number) {
     setIngredients((prev) => prev.filter((_, i) => i !== index));
@@ -202,7 +204,11 @@ export function RecipeForm() {
             type="button"
             variant="outline"
             size="sm"
-            onClick={() => setPickerOpen(true)}
+            onClick={() =>
+              router.push(
+                `/recipes/ingredient/add?return=${encodeURIComponent("/recipes/new")}`
+              )
+            }
           >
             <Plus className="h-4 w-4" />
             Añadir
@@ -268,12 +274,6 @@ export function RecipeForm() {
       <Button type="submit" className="w-full" disabled={busy}>
         {busy ? "Guardando…" : "Guardar receta"}
       </Button>
-
-      <IngredientPicker
-        open={pickerOpen}
-        onClose={() => setPickerOpen(false)}
-        onAdd={handleAddIngredient}
-      />
     </form>
   );
 }

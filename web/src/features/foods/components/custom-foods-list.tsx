@@ -1,21 +1,13 @@
 "use client";
 
-import { useEffect, useReducer, useCallback } from "react";
+import { useEffect, useReducer, useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Pencil, Trash2, Plus, Search } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { ConfirmPanel } from "@/components/layout/page-chrome";
 import { deleteCustomFood } from "@/features/foods/actions";
 import type { Food } from "@/types/food";
 
@@ -49,6 +41,8 @@ function listReducer(state: State, action: Action): State {
 
 export function CustomFoodsList() {
   const router = useRouter();
+  const [deleteTarget, setDeleteTarget] = useState<Food | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const [state, dispatch] = useReducer(listReducer, {
     foods: [],
     loading: true,
@@ -74,19 +68,24 @@ export function CustomFoodsList() {
     fetchFoods();
   }, [fetchFoods]);
 
-  const handleDelete = useCallback(async (food: Food) => {
-    const result = await deleteCustomFood(food.id);
+  const handleDeleteConfirm = useCallback(async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    const result = await deleteCustomFood(deleteTarget.id);
     if (!result.ok) {
       toast.error(result.error);
+      setDeleting(false);
       return;
     }
-    dispatch({ type: "REMOVE", id: food.id });
+    dispatch({ type: "REMOVE", id: deleteTarget.id });
+    setDeleteTarget(null);
+    setDeleting(false);
     toast.success("Alimento eliminado");
-  }, []);
+  }, [deleteTarget]);
 
   if (state.loading) {
     return (
-      <div className="flex flex-col gap-3 px-page pt-2">
+      <div className="px-page flex flex-col gap-3 pt-2">
         {Array.from({ length: 4 }).map((_, i) => (
           <div key={i} className="flex items-center gap-3">
             <Skeleton className="h-10 w-10 rounded-lg" />
@@ -102,7 +101,7 @@ export function CustomFoodsList() {
 
   if (state.error) {
     return (
-      <div className="flex flex-1 flex-col items-center justify-center gap-2 px-page py-16 text-center">
+      <div className="px-page flex flex-1 flex-col items-center justify-center gap-2 py-16 text-center">
         <p className="text-sm text-red-500">{state.error}</p>
         <Button variant="outline" size="sm" onClick={fetchFoods}>
           Reintentar
@@ -113,9 +112,11 @@ export function CustomFoodsList() {
 
   if (state.foods.length === 0) {
     return (
-      <div className="flex flex-1 flex-col items-center justify-center gap-3 px-page py-16 text-center">
-        <Search className="h-8 w-8 text-zinc-300" />
-        <p className="text-sm text-zinc-500">No tienes alimentos propios</p>
+      <div className="px-page flex flex-1 flex-col items-center justify-center gap-3 py-16 text-center">
+        <Search className="text-muted-foreground size-8" />
+        <p className="text-muted-foreground text-sm">
+          No tienes alimentos propios
+        </p>
         <Button
           variant="outline"
           size="sm"
@@ -129,7 +130,7 @@ export function CustomFoodsList() {
   }
 
   return (
-    <div className="flex flex-col gap-2 px-page pt-2">
+    <div className="px-page flex flex-col gap-2 pt-2">
       {state.foods.map((food) => (
         <Card key={food.id} size="sm">
           <CardContent className="flex items-center gap-3">
@@ -158,47 +159,31 @@ export function CustomFoodsList() {
               >
                 <Pencil className="h-4 w-4" />
               </Button>
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button variant="ghost" size="icon-xs" aria-label="Eliminar">
-                    <Trash2 className="h-4 w-4 text-red-500" />
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Eliminar alimento</DialogTitle>
-                    <DialogDescription>
-                      ¿Eliminar &ldquo;{food.name}&rdquo;? Esta acción no afecta
-                      a registros pasados.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <DialogFooter>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        const closeBtn = document.querySelector(
-                          "[data-state='open'] [data-slot='dialog-close']"
-                        ) as HTMLButtonElement | null;
-                        closeBtn?.click();
-                      }}
-                    >
-                      Cancelar
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => handleDelete(food)}
-                    >
-                      Eliminar
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
+              <Button
+                variant="ghost"
+                size="icon-xs"
+                aria-label="Eliminar"
+                className="text-destructive hover:text-destructive"
+                onClick={() => setDeleteTarget(food)}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
             </div>
           </CardContent>
         </Card>
       ))}
+
+      {deleteTarget && (
+        <ConfirmPanel
+          title={`Eliminar «${deleteTarget.name}»`}
+          description="Esta acción no afecta a registros pasados en tu diario."
+          confirmLabel="Eliminar"
+          destructive
+          loading={deleting}
+          onCancel={() => setDeleteTarget(null)}
+          onConfirm={handleDeleteConfirm}
+        />
+      )}
     </div>
   );
 }

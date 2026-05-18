@@ -2,8 +2,9 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ChevronLeft, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { SubPage } from "@/components/layout/page-chrome";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -138,32 +139,33 @@ export default function EditEntryPage({
 
   if (loading) {
     return (
-      <div className="mx-auto max-w-md space-y-6 px-4 pt-4 pb-24">
-        <div className="h-8 w-48 animate-pulse rounded bg-zinc-200 dark:bg-zinc-800" />
+      <SubPage title="Cargando…" backHref={backUrl}>
         <div className="space-y-4">
           {[1, 2, 3].map((i) => (
             <div
               key={i}
-              className="h-16 animate-pulse rounded-xl bg-zinc-100 dark:bg-zinc-900"
+              className="bg-muted h-16 animate-pulse rounded-[18px]"
             />
           ))}
         </div>
-      </div>
+      </SubPage>
     );
   }
 
   if (!entry) {
     return (
-      <div className="mx-auto max-w-md px-4 pt-8 text-center">
-        <p className="text-sm text-zinc-500">Entrada no encontrada.</p>
+      <SubPage title="Entrada" backHref={backUrl}>
+        <p className="text-muted-foreground text-center text-sm">
+          Entrada no encontrada.
+        </p>
         <Button
           variant="outline"
-          className="mt-4"
+          className="mt-4 w-full"
           onClick={() => router.push(backUrl)}
         >
           Volver
         </Button>
-      </div>
+      </SubPage>
     );
   }
 
@@ -171,144 +173,127 @@ export default function EditEntryPage({
     { g: "gramos", ml: "mililitros", serving: "porciones" }[unit] ?? unit;
 
   return (
-    <div className="mx-auto max-w-md space-y-6 px-4 pt-4 pb-24">
-      <div className="flex items-center gap-2">
-        <Button
-          variant="ghost"
-          size="icon-xs"
-          onClick={() => router.push(backUrl)}
-          aria-label="Volver"
-        >
-          <ChevronLeft className="h-5 w-5" />
-        </Button>
-        <h1 className="truncate text-lg font-semibold">{entry.source_name}</h1>
-      </div>
-
-      {/* Cantidad */}
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="edit-quantity">Cantidad</Label>
-          <div className="flex gap-2">
-            <Input
-              id="edit-quantity"
-              type="number"
-              inputMode="decimal"
-              step="any"
-              min="0"
-              value={quantity}
-              onChange={(e) => setQuantity(e.target.value)}
-              className="flex-1"
-            />
-            <Select
-              value={unit}
-              onValueChange={(v) => setUnit(v as "g" | "ml" | "serving")}
-            >
-              <SelectTrigger className="w-32">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="g">gramos</SelectItem>
-                <SelectItem value="ml">mililitros</SelectItem>
-                <SelectItem value="serving">porciones</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-
-        {qtyNum > 0 && (
-          <div className="flex items-center justify-between rounded-lg border bg-zinc-50 px-3 py-2 text-sm dark:bg-zinc-900">
-            <span className="text-zinc-500">
-              {qtyNum} {unitLabel}
-            </span>
-            <span className="font-medium tabular-nums">
-              {Math.round(
-                entry.kcal * (qtyNum > 0 ? qtyNum / entry.quantity : 1)
-              )}{" "}
-              kcal
-            </span>
-          </div>
-        )}
-
-        <Button
-          className="w-full"
-          disabled={!hasChanges || submitting}
-          onClick={handleSave}
-        >
-          {submitting ? "Guardando..." : "Guardar cambios"}
-        </Button>
-      </div>
-
-      {/* Mover a otro momento */}
-      {otherSlots.length > 0 && (
-        <div className="space-y-3 border-t pt-4">
-          <h2 className="text-sm font-semibold tracking-wider text-zinc-500 uppercase">
-            Mover a
-          </h2>
-          <div className="flex gap-2">
-            <Select value={moveSlotId} onValueChange={setMoveSlotId}>
-              <SelectTrigger className="flex-1">
-                <SelectValue placeholder="Seleccionar momento..." />
-              </SelectTrigger>
-              <SelectContent>
-                {otherSlots.map((s) => (
-                  <SelectItem key={s.id} value={s.id}>
-                    {s.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Button
-              variant="outline"
-              disabled={!moveSlotId || submitting}
-              onClick={handleMove}
-            >
-              Mover
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {/* Eliminar */}
-      <div className="space-y-3 border-t pt-4">
-        <h2 className="text-sm font-semibold tracking-wider text-zinc-500 uppercase">
-          Eliminar
-        </h2>
-        {confirmDelete ? (
-          <div className="rounded-xl border border-red-200 bg-red-50 p-4 dark:border-red-900 dark:bg-red-950">
-            <p className="mb-3 text-sm text-red-700 dark:text-red-300">
-              ¿Borrar &ldquo;{entry.source_name}&rdquo;? Esta acción no se puede
-              deshacer.
-            </p>
+    <SubPage title={entry.source_name} backHref={backUrl}>
+      <div className="space-y-6">
+        <section className="space-y-4">
+          <h2 className="section-label text-muted-foreground">Cantidad</h2>
+          <div className="space-y-2">
+            <Label htmlFor="edit-quantity">Cantidad</Label>
             <div className="flex gap-2">
-              <Button
-                variant="outline"
+              <Input
+                id="edit-quantity"
+                type="number"
+                inputMode="decimal"
+                step="any"
+                min="0"
+                value={quantity}
+                onChange={(e) => setQuantity(e.target.value)}
                 className="flex-1"
-                onClick={() => setConfirmDelete(false)}
-                disabled={deleting}
+              />
+              <Select
+                value={unit}
+                onValueChange={(v) => setUnit(v as "g" | "ml" | "serving")}
               >
-                Cancelar
-              </Button>
-              <Button
-                variant="destructive"
-                className="flex-1"
-                onClick={handleDelete}
-                disabled={deleting}
-              >
-                {deleting ? "Eliminando..." : "Borrar"}
-              </Button>
+                <SelectTrigger className="w-32">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="g">gramos</SelectItem>
+                  <SelectItem value="ml">mililitros</SelectItem>
+                  <SelectItem value="serving">porciones</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
-        ) : (
+
+          {qtyNum > 0 && (
+            <div className="bg-muted/30 border-border flex items-center justify-between rounded-[14px] border px-3 py-2.5 text-sm">
+              <span className="text-muted-foreground">
+                {qtyNum} {unitLabel}
+              </span>
+              <span className="num font-semibold">
+                {Math.round(
+                  entry.kcal * (qtyNum > 0 ? qtyNum / entry.quantity : 1)
+                )}{" "}
+                kcal
+              </span>
+            </div>
+          )}
+
           <Button
-            variant="outline"
-            className="w-full text-red-600 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950"
-            onClick={() => setConfirmDelete(true)}
+            className="w-full"
+            disabled={!hasChanges || submitting}
+            onClick={handleSave}
           >
-            <Trash2 className="mr-2 h-4 w-4" />
-            Eliminar entrada
+            {submitting ? "Guardando..." : "Guardar cambios"}
           </Button>
+        </section>
+
+        {otherSlots.length > 0 && (
+          <section className="border-border space-y-3 border-t pt-6">
+            <h2 className="section-label text-muted-foreground">Mover a</h2>
+            <div className="flex gap-2">
+              <Select value={moveSlotId} onValueChange={setMoveSlotId}>
+                <SelectTrigger className="flex-1">
+                  <SelectValue placeholder="Seleccionar momento..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {otherSlots.map((s) => (
+                    <SelectItem key={s.id} value={s.id}>
+                      {s.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button
+                variant="outline"
+                disabled={!moveSlotId || submitting}
+                onClick={handleMove}
+              >
+                Mover
+              </Button>
+            </div>
+          </section>
         )}
+
+        <section className="border-border space-y-3 border-t pt-6">
+          <h2 className="section-label text-muted-foreground">Eliminar</h2>
+          {confirmDelete ? (
+            <div className="border-destructive/30 bg-destructive/5 rounded-[18px] border p-4">
+              <p className="mb-3 text-sm leading-relaxed">
+                ¿Borrar «{entry.source_name}»? Esta acción no se puede deshacer.
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => setConfirmDelete(false)}
+                  disabled={deleting}
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  variant="destructive"
+                  className="flex-1"
+                  onClick={handleDelete}
+                  disabled={deleting}
+                >
+                  {deleting ? "Eliminando..." : "Borrar"}
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <Button
+              variant="outline"
+              className="text-destructive hover:bg-destructive/5 hover:text-destructive w-full"
+              onClick={() => setConfirmDelete(true)}
+            >
+              <Trash2 className="mr-2 size-4" />
+              Eliminar entrada
+            </Button>
+          )}
+        </section>
       </div>
-    </div>
+    </SubPage>
   );
 }

@@ -4,12 +4,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
+import { cn } from "@/lib/utils";
 
 interface Props {
   date: string;
@@ -76,7 +72,7 @@ interface SwipeState {
 export function DayNavigator({ date, timezone = "UTC" }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [pickerOpen, setPickerOpen] = useState(false);
+  const [calendarOpen, setCalendarOpen] = useState(false);
   const swipeRef = useRef<SwipeState | null>(null);
   const today = todayInTimezone(timezone);
   const canGoForward = date < today;
@@ -137,66 +133,77 @@ export function DayNavigator({ date, timezone = "UTC" }: Props) {
 
   return (
     <div
-      className="mb-3.5 flex items-center justify-between px-2"
+      className="mb-3.5"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={() => goToRelative(-1)}
-        aria-label="Día anterior"
-        className="size-10 rounded-full"
-      >
-        <ChevronLeft className="h-[22px] w-[22px]" />
-      </Button>
+      <div className="flex items-center justify-between px-2">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => goToRelative(-1)}
+          aria-label="Día anterior"
+          className="size-10 rounded-full"
+        >
+          <ChevronLeft className="h-[22px] w-[22px]" />
+        </Button>
 
-      <Popover open={pickerOpen} onOpenChange={setPickerOpen}>
-        <PopoverTrigger asChild>
-          <button
-            type="button"
-            className="flex flex-col items-center gap-1 text-center outline-none"
-          >
-            <span className="num text-[19px] leading-tight font-semibold capitalize">
-              {label}
-            </span>
-            <span className="text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
-              {subline}
-            </span>
-          </button>
-        </PopoverTrigger>
-        <PopoverContent className="w-auto p-0">
-          <Calendar
-            mode="single"
-            selected={new Date(date + "T12:00:00")}
-            onSelect={(day) => {
-              if (!day) return;
-              const dateStr =
-                day.getFullYear() +
-                "-" +
-                String(day.getMonth() + 1).padStart(2, "0") +
-                "-" +
-                String(day.getDate()).padStart(2, "0");
-              if (dateStr <= today) {
-                goTo(dateStr);
-                setPickerOpen(false);
-              }
-            }}
-            disabled={[{ after: new Date(today + "T12:00:00") }]}
-          />
-        </PopoverContent>
-      </Popover>
+        <button
+          type="button"
+          onClick={() => setCalendarOpen((o) => !o)}
+          className="flex flex-col items-center gap-1 text-center outline-none"
+          aria-expanded={calendarOpen}
+          aria-label="Elegir fecha"
+        >
+          <span className="num text-[19px] leading-tight font-semibold capitalize">
+            {label}
+          </span>
+          <span className="text-muted-foreground text-[11px] font-medium tracking-wide uppercase">
+            {subline}
+          </span>
+        </button>
 
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={() => goToRelative(1)}
-        disabled={!canGoForward}
-        aria-label="Día siguiente"
-        className="size-10 rounded-full disabled:opacity-40"
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => goToRelative(1)}
+          disabled={!canGoForward}
+          aria-label="Día siguiente"
+          className="size-10 rounded-full disabled:opacity-40"
+        >
+          <ChevronRight className="h-[22px] w-[22px]" />
+        </Button>
+      </div>
+
+      <div
+        className={cn(
+          "grid transition-[grid-template-rows] duration-200 ease-out",
+          calendarOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+        )}
       >
-        <ChevronRight className="h-[22px] w-[22px]" />
-      </Button>
+        <div className="overflow-hidden">
+          <div className="border-border bg-card shadow-app-1 mt-3 flex justify-center rounded-[18px] border p-2">
+            <Calendar
+              mode="single"
+              selected={new Date(date + "T12:00:00")}
+              onSelect={(day) => {
+                if (!day) return;
+                const dateStr =
+                  day.getFullYear() +
+                  "-" +
+                  String(day.getMonth() + 1).padStart(2, "0") +
+                  "-" +
+                  String(day.getDate()).padStart(2, "0");
+                if (dateStr <= today) {
+                  goTo(dateStr);
+                  setCalendarOpen(false);
+                }
+              }}
+              disabled={[{ after: new Date(today + "T12:00:00") }]}
+            />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

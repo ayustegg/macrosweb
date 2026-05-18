@@ -3,6 +3,7 @@
 import { useState, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Plus } from "lucide-react";
+import { SubPage } from "@/components/layout/page-chrome";
 import { FoodSearchInput } from "@/features/foods/components/food-search-input";
 import { FoodSearchResults } from "@/features/foods/components/food-search-results";
 import { useDebounce } from "@/hooks/use-debounce";
@@ -17,6 +18,7 @@ export default function FoodSearchPage() {
 
   const slot = searchParams.get("slot");
   const date = searchParams.get("date");
+  const backHref = date ? `/today?date=${date}` : slot ? "/today" : "/foods";
 
   const handleSelect = useCallback(
     (food: Food) => {
@@ -30,31 +32,28 @@ export default function FoodSearchPage() {
   );
 
   return (
-    <div className="flex flex-1 flex-col">
-      <div className="sticky top-0 z-10 border-b bg-white px-4 py-3 dark:bg-black">
+    <SubPage title="Buscar alimento" backHref={backHref}>
+      <div className="flex flex-1 flex-col gap-3">
         <FoodSearchInput value={input} onChange={setInput} />
-      </div>
-
-      <div className="flex flex-1 flex-col pt-3">
         <FoodSearchResults
           query={debouncedQuery}
-          onSelect={handleSelect}
+          onSelect={slot ? handleSelect : undefined}
           onCreateClick={(name) =>
             router.push(`/foods/new?name=${encodeURIComponent(name)}`)
           }
         />
       </div>
 
-      <div className="fixed right-4 bottom-20 z-40">
+      <div className="bottom-fab fixed right-4 z-40">
         <Button
           size="icon-lg"
-          className="h-12 w-12 rounded-full shadow-lg"
+          className="shadow-app-1 size-12 rounded-full"
           onClick={() => router.push("/foods/new")}
           aria-label="Crear alimento"
         >
-          <Plus className="h-6 w-6" />
+          <Plus className="size-6" />
         </Button>
       </div>
-    </div>
+    </SubPage>
   );
 }

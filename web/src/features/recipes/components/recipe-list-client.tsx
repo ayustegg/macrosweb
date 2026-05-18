@@ -25,7 +25,7 @@ export function RecipeListClient({ recipes }: Props) {
   return (
     <div className="space-y-4">
       <div className="relative">
-        <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-zinc-400" />
+        <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
         <Input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
@@ -47,7 +47,7 @@ export function RecipeListClient({ recipes }: Props) {
       </div>
 
       {filtered.length === 0 ? (
-        <p className="py-8 text-center text-sm text-zinc-500">
+        <p className="text-muted-foreground py-8 text-center text-sm">
           {query
             ? "No se encontraron recetas con ese nombre."
             : "Aún no tienes recetas."}
