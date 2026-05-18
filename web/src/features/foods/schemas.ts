@@ -11,6 +11,9 @@ export const createFoodSchema = z.object({
     .positive("La porción debe ser mayor a 0")
     .default(100),
   serving_name: z.string().optional(),
+  is_liquid: z
+    .union([z.literal("on"), z.literal(true), z.boolean()])
+    .optional(),
   density_g_per_ml: z.coerce
     .number()
     .positive("La densidad debe ser mayor a 0")
@@ -21,6 +24,11 @@ export const createFoodSchema = z.object({
     .number()
     .min(0, "Los carbohidratos no pueden ser negativos"),
   fat_g: z.coerce.number().min(0, "La grasa no puede ser negativa"),
+  fiber_g: z.coerce.number().min(0).optional(),
+  sugars_g: z.coerce.number().min(0).optional(),
+  saturated_fat_g: z.coerce.number().min(0).optional(),
+  salt_g: z.coerce.number().min(0).optional(),
+  sodium_mg: z.coerce.number().min(0).optional(),
 });
 
 export type CreateFoodInput = z.infer<typeof createFoodSchema>;
@@ -35,6 +43,9 @@ export const updateFoodSchema = z.object({
     .positive("La porción debe ser mayor a 0")
     .optional(),
   serving_name: z.string().optional(),
+  is_liquid: z
+    .union([z.literal("on"), z.literal(true), z.boolean()])
+    .optional(),
   density_g_per_ml: z.coerce
     .number()
     .positive("La densidad debe ser mayor a 0")
@@ -52,6 +63,11 @@ export const updateFoodSchema = z.object({
     .min(0, "Los carbohidratos no pueden ser negativos")
     .optional(),
   fat_g: z.coerce.number().min(0, "La grasa no puede ser negativa").optional(),
+  fiber_g: z.coerce.number().min(0).optional(),
+  sugars_g: z.coerce.number().min(0).optional(),
+  saturated_fat_g: z.coerce.number().min(0).optional(),
+  salt_g: z.coerce.number().min(0).optional(),
+  sodium_mg: z.coerce.number().min(0).optional(),
 });
 
 export type UpdateFoodInput = z.infer<typeof updateFoodSchema>;

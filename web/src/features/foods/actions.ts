@@ -10,6 +10,26 @@ import { searchFoods } from "./queries";
 
 export type FoodWithSource = Food & { isLocal: boolean };
 
+function extractNutrients(
+  data: Record<string, unknown>
+): Record<string, number> {
+  const nutrientKeys = [
+    "fiber_g",
+    "sugars_g",
+    "saturated_fat_g",
+    "salt_g",
+    "sodium_mg",
+  ] as const;
+  const nutrients: Record<string, number> = {};
+  for (const key of nutrientKeys) {
+    const val = data[key];
+    if (val !== undefined && val !== null && val !== "") {
+      nutrients[key] = Number(val);
+    }
+  }
+  return nutrients;
+}
+
 export async function searchFoodsAction(
   query: string
 ): Promise<FoodWithSource[]> {
@@ -28,11 +48,17 @@ export async function createCustomFood(
     off_id: formData.get("off_id") || undefined,
     serving_size_g: formData.get("serving_size_g") ?? undefined,
     serving_name: formData.get("serving_name") || undefined,
+    is_liquid: formData.get("is_liquid") ?? undefined,
     density_g_per_ml: formData.get("density_g_per_ml") || undefined,
     kcal: formData.get("kcal") ?? undefined,
     protein_g: formData.get("protein_g") ?? undefined,
     carbs_g: formData.get("carbs_g") ?? undefined,
     fat_g: formData.get("fat_g") ?? undefined,
+    fiber_g: formData.get("fiber_g") || undefined,
+    sugars_g: formData.get("sugars_g") || undefined,
+    saturated_fat_g: formData.get("saturated_fat_g") || undefined,
+    salt_g: formData.get("salt_g") || undefined,
+    sodium_mg: formData.get("sodium_mg") || undefined,
   });
 
   if (!parsed.success) {
@@ -53,6 +79,10 @@ export async function createCustomFood(
     return { ok: false, error: "No hay sesión activa" };
   }
 
+  const nutrients = extractNutrients(
+    parsed.data as unknown as Record<string, unknown>
+  );
+
   const { data, error } = await supabase
     .from("foods")
     .insert({
@@ -69,7 +99,7 @@ export async function createCustomFood(
       protein_g: parsed.data.protein_g,
       carbs_g: parsed.data.carbs_g,
       fat_g: parsed.data.fat_g,
-      nutrients: {},
+      nutrients: nutrients as never,
     } as never)
     .select("*")
     .single();
@@ -92,11 +122,17 @@ export async function updateCustomFood(
     off_id: formData.get("off_id") || undefined,
     serving_size_g: formData.get("serving_size_g") ?? undefined,
     serving_name: formData.get("serving_name") || undefined,
+    is_liquid: formData.get("is_liquid") ?? undefined,
     density_g_per_ml: formData.get("density_g_per_ml") ?? undefined,
     kcal: formData.get("kcal") ?? undefined,
     protein_g: formData.get("protein_g") ?? undefined,
     carbs_g: formData.get("carbs_g") ?? undefined,
     fat_g: formData.get("fat_g") ?? undefined,
+    fiber_g: formData.get("fiber_g") || undefined,
+    sugars_g: formData.get("sugars_g") || undefined,
+    saturated_fat_g: formData.get("saturated_fat_g") || undefined,
+    salt_g: formData.get("salt_g") || undefined,
+    sodium_mg: formData.get("sodium_mg") || undefined,
   });
 
   if (!parsed.success) {
@@ -119,7 +155,7 @@ export async function updateCustomFood(
 
   const { data: existing } = await supabase
     .from("foods")
-    .select("owner_id")
+    .select("owner_id, nutrients")
     .eq("id", id)
     .single();
 
@@ -145,6 +181,30 @@ export async function updateCustomFood(
   if (d.protein_g !== undefined) updates.protein_g = d.protein_g;
   if (d.carbs_g !== undefined) updates.carbs_g = d.carbs_g;
   if (d.fat_g !== undefined) updates.fat_g = d.fat_g;
+
+  const nutrientKeys = [
+    "fiber_g",
+    "sugars_g",
+    "saturated_fat_g",
+    "salt_g",
+    "sodium_mg",
+  ] as const;
+  const hasAnyNutrient = nutrientKeys.some(
+    (k) => d[k as keyof typeof d] !== undefined
+  );
+  if (hasAnyNutrient) {
+    const existingNutrients =
+      (existing as unknown as { nutrients: Record<string, number> | null })
+        .nutrients ?? {};
+    const merged = { ...existingNutrients };
+    for (const key of nutrientKeys) {
+      const val = d[key as keyof typeof d];
+      if (val !== undefined) {
+        merged[key] = Number(val);
+      }
+    }
+    updates.nutrients = merged as never;
+  }
 
   const { data, error } = await supabase
     .from("foods")
