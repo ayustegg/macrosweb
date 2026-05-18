@@ -120,7 +120,7 @@ function SwipeableEntry({
     }
   }, 88);
 
-  const editHref = `/today/entry/${entry.id}/edit?date=${date}`;
+  const editHref = `/entry/${entry.id}/edit?date=${date}`;
 
   return (
     <div className="relative overflow-hidden" {...handlers}>

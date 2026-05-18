@@ -2,7 +2,7 @@
   "name": "Mido",
   "short_name": "Mido",
   "description": "Controla tus macros, alcanza tus metas",
-  "start_url": "/today",
+  "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",

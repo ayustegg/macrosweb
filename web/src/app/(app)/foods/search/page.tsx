@@ -18,7 +18,7 @@ export default function FoodSearchPage() {
 
   const slot = searchParams.get("slot");
   const date = searchParams.get("date");
-  const backHref = date ? `/today?date=${date}` : slot ? "/today" : "/foods";
+  const backHref = date ? `/?date=${date}` : slot ? "/" : "/foods";
 
   const handleSelect = useCallback(
     (food: Food) => {

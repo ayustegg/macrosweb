@@ -113,7 +113,7 @@ export function AddRecipeEntryClient({ recipe, date }: Props) {
       }
 
       toast.success(`Añadido a ${slotName}`);
-      const target = date ? `/today?date=${date}` : "/today";
+      const target = date ? `/?date=${date}` : "/";
       router.push(target);
     } finally {
       setSubmitting(false);

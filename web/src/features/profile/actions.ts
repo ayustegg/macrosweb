@@ -140,7 +140,7 @@ export async function completeOnboarding(
     secure: process.env.NODE_ENV === "production",
   });
 
-  redirect("/today");
+  redirect("/");
 }
 
 export async function updateProfile(

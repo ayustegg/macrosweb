@@ -13,12 +13,23 @@ const PUBLIC_ROUTES = [
 const isPublicRoute = (pathname: string) =>
   PUBLIC_ROUTES.some(
     (route) => pathname === route || pathname.startsWith(route)
-  ) ||
-  pathname === "/" ||
-  pathname.startsWith("/api/auth");
+  ) || pathname.startsWith("/api/auth");
+
+function redirectFromLegacyToday(request: NextRequest) {
+  const { pathname, search } = request.nextUrl;
+  if (pathname === "/today" || pathname.startsWith("/today/")) {
+    const nextPath =
+      pathname === "/today" ? "/" : pathname.replace(/^\/today/, "") || "/";
+    return NextResponse.redirect(new URL(nextPath + search, request.url));
+  }
+  return null;
+}
 
 export async function updateSession(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  const legacyToday = redirectFromLegacyToday(request);
+  if (legacyToday) return legacyToday;
 
   let supabaseResponse = NextResponse.next({
     request: { headers: request.headers },
@@ -61,7 +72,7 @@ export async function updateSession(request: NextRequest) {
 
   if (pathname === "/onboarding") {
     if (profileCompleted) {
-      return NextResponse.redirect(new URL("/today", request.url));
+      return NextResponse.redirect(new URL("/", request.url));
     }
     return supabaseResponse;
   }

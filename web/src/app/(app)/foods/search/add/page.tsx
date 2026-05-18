@@ -88,7 +88,7 @@ export default function AddFoodEntryPage() {
   }, [food, qtyNum, unit]);
 
   const slotName = slots.find((s) => s.id === slotId)?.name ?? "";
-  const backHref = date ? `/today?date=${date}` : "/today";
+  const backHref = date ? `/?date=${date}` : "/";
 
   async function handleSubmit() {
     if (!food) return;

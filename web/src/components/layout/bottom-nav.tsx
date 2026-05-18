@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { Home, Search, Utensils, User } from "lucide-react";
 
 const items = [
-  { href: "/today", label: "Hoy", Icon: Home },
+  { href: "/", label: "Hoy", Icon: Home },
   { href: "/foods", label: "Alimentos", Icon: Search },
   { href: "/recipes", label: "Recetas", Icon: Utensils },
   { href: "/profile", label: "Perfil", Icon: User },
@@ -25,7 +25,10 @@ export function BottomNav() {
         style={{ height: "var(--bottom-nav-height)" }}
       >
         {items.map(({ href, label, Icon }) => {
-          const active = pathname === href || pathname.startsWith(href + "/");
+          const active =
+            href === "/"
+              ? pathname === "/"
+              : pathname === href || pathname.startsWith(`${href}/`);
 
           return (
             <Link

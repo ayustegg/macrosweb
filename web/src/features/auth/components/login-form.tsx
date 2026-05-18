@@ -40,7 +40,7 @@ export function LoginForm() {
     }
 
     if (result.data.profileCompleted) {
-      window.location.replace("/today");
+      window.location.replace("/");
     } else {
       window.location.replace("/onboarding");
     }

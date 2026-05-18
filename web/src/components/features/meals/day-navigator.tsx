@@ -132,12 +132,12 @@ export function DayNavigator({ date, timezone = "UTC" }: Props) {
   const subline = formatSubline(date);
 
   return (
-    <div
-      className="mb-3.5"
+    <section
+      className="border-border bg-card shadow-app-1 mb-3.5 overflow-hidden rounded-[22px] border"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      <div className="flex items-center justify-between px-2">
+      <div className="flex items-center justify-between px-1 py-1">
         <Button
           variant="ghost"
           size="icon"
@@ -151,7 +151,7 @@ export function DayNavigator({ date, timezone = "UTC" }: Props) {
         <button
           type="button"
           onClick={() => setCalendarOpen((o) => !o)}
-          className="flex flex-col items-center gap-1 text-center outline-none"
+          className="hover:bg-muted/60 flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-2xl px-3 py-2 text-center transition-colors outline-none"
           aria-expanded={calendarOpen}
           aria-label="Elegir fecha"
         >
@@ -182,8 +182,9 @@ export function DayNavigator({ date, timezone = "UTC" }: Props) {
         )}
       >
         <div className="overflow-hidden">
-          <div className="border-border bg-card shadow-app-1 mt-3 flex justify-center rounded-[18px] border p-2">
+          <div className="border-border border-t px-2 pt-1 pb-2">
             <Calendar
+              className="w-full [--cell-size:--spacing(9)]"
               mode="single"
               selected={new Date(date + "T12:00:00")}
               onSelect={(day) => {
@@ -204,6 +205,6 @@ export function DayNavigator({ date, timezone = "UTC" }: Props) {
           </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 }
