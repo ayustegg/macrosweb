@@ -259,6 +259,7 @@ export function TodayPageClient({
                     totals: { kcal: 0, protein_g: 0, carbs_g: 0, fat_g: 0 },
                   }
                 }
+                date={date}
                 allSlots={slots}
                 onUpdateEntry={handleUpdateEntry}
                 onDeleteEntry={handleDeleteEntry}
@@ -269,7 +270,7 @@ export function TodayPageClient({
           })}
         </div>
       ) : hasAnyEntry ? (
-        <EmptyDay />
+        <EmptyDay date={date} />
       ) : (
         <FirstTimeWelcome />
       )}
@@ -277,7 +278,7 @@ export function TodayPageClient({
   );
 }
 
-function EmptyDay() {
+function EmptyDay({ date }: { date: string }) {
   return (
     <div className="flex flex-col items-center justify-center px-4 pt-8 pb-16 text-center">
       <svg
@@ -319,7 +320,7 @@ function EmptyDay() {
         Aún no has añadido nada. Busca un alimento para empezar a registrar tu
         día.
       </p>
-      <Link href="/foods/search">
+      <Link href={`/foods/search?date=${date}`}>
         <Button size="lg">Empezar a registrar →</Button>
       </Link>
     </div>

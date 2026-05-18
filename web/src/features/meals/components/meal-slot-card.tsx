@@ -19,6 +19,7 @@ interface Props {
   slotId: string;
   slotName: string;
   slotData: SlotEntries;
+  date: string;
   allSlots?: MealSlot[];
   onUpdateEntry?: (entry: Entry) => void;
   onDeleteEntry?: (entryId: string) => void;
@@ -30,6 +31,7 @@ export function MealSlotCard({
   slotId,
   slotName,
   slotData,
+  date,
   allSlots = [],
   onUpdateEntry,
   onDeleteEntry,
@@ -69,7 +71,7 @@ export function MealSlotCard({
             className="text-muted-foreground w-full justify-start gap-2"
             asChild
           >
-            <Link href={`/foods/search?slot=${slotId}`}>
+            <Link href={`/foods/search?slot=${slotId}&date=${date}`}>
               <Plus className="h-4 w-4" />
               Añadir
             </Link>

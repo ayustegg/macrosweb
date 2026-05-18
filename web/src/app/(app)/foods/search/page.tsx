@@ -19,6 +19,7 @@ export default function FoodSearchPage() {
   const debouncedQuery = useDebounce(input, 300);
 
   const slot = searchParams.get("slot");
+  const date = searchParams.get("date") ?? undefined;
 
   const handleSelect = useCallback(
     (food: Food) => {
@@ -33,8 +34,9 @@ export default function FoodSearchPage() {
   const handleConfirm = useCallback(() => {
     setSelectedFood(null);
     setDialogOpen(false);
-    router.push("/today");
-  }, [router]);
+    const target = date ? `/today?date=${date}` : "/today";
+    router.push(target);
+  }, [router, date]);
 
   const handleOpenChange = useCallback((open: boolean) => {
     setDialogOpen(open);
@@ -71,6 +73,7 @@ export default function FoodSearchPage() {
       {selectedFood && slot && (
         <AddEntryDialog
           food={selectedFood}
+          date={date}
           defaultSlotId={slot}
           open={dialogOpen}
           onOpenChange={handleOpenChange}
