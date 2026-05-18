@@ -58,7 +58,7 @@ export function AppHeader({ initials }: Props) {
             }}
             aria-hidden
           >
-            <BrandMark size={24} />
+            <BrandMark size={36} />
           </span>
           <span className="truncate text-[19px] font-bold tracking-tight">
             {APP_NAME}
