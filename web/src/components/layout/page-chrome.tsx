@@ -6,24 +6,21 @@ import { cn } from "@/lib/utils";
 
 /** Root tab screen: title row + content, consistent across Hoy / Alimentos / Recetas / Perfil */
 export function TabPage({
-  title,
   action,
   children,
   className,
 }: {
-  title: string;
   action?: ReactNode;
   children: ReactNode;
   className?: string;
 }) {
   return (
     <div className={cn("px-page w-full pt-2 pb-4", className)}>
-      <div className="flex items-baseline justify-between gap-3 pb-3.5">
-        <h1 className="text-[28px] leading-tight font-bold tracking-tight">
-          {title}
-        </h1>
-        {action}
-      </div>
+      {action && (
+        <div className="flex items-center justify-end gap-3 pb-3.5">
+          {action}
+        </div>
+      )}
       {children}
     </div>
   );

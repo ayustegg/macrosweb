@@ -41,44 +41,45 @@ export function AppHeader({ initials }: Props) {
       className="app-shell-chrome border-border/80 bg-background/90 w-full border-b backdrop-blur-xl backdrop-saturate-150"
       aria-busy={isNavigating}
     >
-      <div className="px-page relative flex w-full items-center gap-3 py-2.5">
-        <Link
-          href="/"
-          prefetch
-          aria-label="Inicio"
-          className="focus-visible:ring-ring relative z-10 flex shrink-0 items-center rounded-sm outline-none focus-visible:ring-2"
-          onMouseEnter={() => prefetchTab("/")}
-          onClick={(e) => {
-            if (pathname === "/") {
-              e.preventDefault();
-              startHomeRefresh();
-              return;
-            }
-            startNavigation("/");
-          }}
-        >
-          <span
-            className="inline-flex shrink-0 will-change-transform"
-            style={{
-              transform: `rotate(${rotation}deg)`,
-              transition: transition
-                ? `transform ${settleDurationMs}ms ${settleEasing}`
-                : "none",
-            }}
-            aria-hidden
-          >
-            <BrandMark size={36} />
-          </span>
-        </Link>
-
-        <h1 className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 truncate text-center text-[17px] font-bold tracking-tight">
+      <div className="px-page flex w-full flex-col gap-1.5 py-2">
+        <h1 className="truncate text-center text-[15px] font-bold tracking-tight">
           {tabTitle}
         </h1>
 
-        <div className="flex-1" aria-hidden />
+        <div className="flex w-full items-center gap-3">
+          <Link
+            href="/"
+            prefetch
+            aria-label="Inicio"
+            className="focus-visible:ring-ring flex shrink-0 items-center rounded-sm outline-none focus-visible:ring-2"
+            onMouseEnter={() => prefetchTab("/")}
+            onClick={(e) => {
+              if (pathname === "/") {
+                e.preventDefault();
+                startHomeRefresh();
+                return;
+              }
+              startNavigation("/");
+            }}
+          >
+            <span
+              className="inline-flex shrink-0 will-change-transform"
+              style={{
+                transform: `rotate(${rotation}deg)`,
+                transition: transition
+                  ? `transform ${settleDurationMs}ms ${settleEasing}`
+                  : "none",
+              }}
+              aria-hidden
+            >
+              <BrandMark size={36} />
+            </span>
+          </Link>
 
-        <Link
-          href="/profile"
+          <div className="flex-1" aria-hidden />
+
+          <Link
+            href="/profile"
           prefetch
           aria-label="Perfil"
           aria-current={profileActive ? "page" : undefined}
@@ -87,14 +88,15 @@ export function AppHeader({ initials }: Props) {
             if (!profileActive) startNavigation("/profile");
           }}
           className={cn(
-            "focus-visible:ring-ring relative z-10 flex size-9 shrink-0 items-center justify-center rounded-full border text-[13px] font-bold tracking-tight transition-colors outline-none focus-visible:ring-2",
+            "focus-visible:ring-ring relative z-10 flex size-9 shrink-0 items-center justify-center rounded-full border-2 text-[13px] font-bold tracking-tight transition-colors outline-none focus-visible:ring-2",
             profileActive
               ? "border-foreground bg-foreground text-background shadow-app-1"
-              : "border-border/80 bg-card text-accent-foreground shadow-app-1 hover:bg-muted/60"
+              : "border-foreground/80 bg-card text-accent-foreground shadow-app-1 hover:bg-muted/60"
           )}
         >
-          {initials}
-        </Link>
+            {initials}
+          </Link>
+        </div>
       </div>
     </header>
   );

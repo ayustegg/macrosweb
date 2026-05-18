@@ -20,12 +20,15 @@ export function BottomNav() {
 
   return (
     <nav
-      className="app-shell-chrome border-border/80 bg-background/95 pb-safe-nav w-full border-t backdrop-blur-xl backdrop-saturate-150"
+      className="app-shell-chrome border-border/80 bg-background/95 w-full border-t backdrop-blur-xl backdrop-saturate-150"
       aria-label="Navegación principal"
     >
       <div
         className="px-page grid w-full grid-cols-3"
-        style={{ height: "var(--bottom-nav-height)" }}
+        style={{
+          height:
+            "calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px))",
+        }}
       >
         {items.map(({ href, label, Icon }) => {
           const active =
