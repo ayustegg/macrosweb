@@ -175,11 +175,12 @@ describe("searchByName", () => {
         }),
     });
 
-    const results = await searchByName("manzana-1");
+    const result = await searchByName("manzana-1");
 
-    expect(results).toHaveLength(2);
-    expect(results[0].name).toBe("Manzana");
-    expect(results[1].name).toBe("Manzana Golden");
+    expect(result.ok).toBe(true);
+    expect(result.foods).toHaveLength(2);
+    expect(result.foods[0].name).toBe("Manzana");
+    expect(result.foods[1].name).toBe("Manzana Golden");
   });
 
   it("filters out products without a name", async () => {
@@ -195,35 +196,39 @@ describe("searchByName", () => {
         }),
     });
 
-    const results = await searchByName("filter-test");
+    const result = await searchByName("filter-test");
 
-    expect(results).toHaveLength(1);
-    expect(results[0].name).toBe("Con nombre");
+    expect(result.ok).toBe(true);
+    expect(result.foods).toHaveLength(1);
+    expect(result.foods[0].name).toBe("Con nombre");
   });
 
   it("returns empty array on 5xx without throwing", async () => {
     globalThis.fetch = vi.fn().mockResolvedValue({ ok: false, status: 502 });
 
-    const results = await searchByName("manzana-5xx");
+    const result = await searchByName("manzana-5xx");
 
-    expect(results).toEqual([]);
+    expect(result.ok).toBe(false);
+    expect(result.foods).toEqual([]);
   });
 
   it("returns empty array on network error without throwing", async () => {
     globalThis.fetch = vi.fn().mockRejectedValue(new Error("Network error"));
 
-    const results = await searchByName("manzana-network");
+    const result = await searchByName("manzana-network");
 
-    expect(results).toEqual([]);
+    expect(result.ok).toBe(false);
+    expect(result.foods).toEqual([]);
   });
 
   it("returns empty array for empty query", async () => {
     const mockFetch = vi.fn();
     globalThis.fetch = mockFetch;
 
-    const results = await searchByName("");
+    const result = await searchByName("");
 
-    expect(results).toEqual([]);
+    expect(result.ok).toBe(true);
+    expect(result.foods).toEqual([]);
     expect(mockFetch).not.toHaveBeenCalled();
   });
 });

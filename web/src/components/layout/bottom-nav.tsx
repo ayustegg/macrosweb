@@ -6,7 +6,7 @@ import { Home, Search, Utensils, User } from "lucide-react";
 
 const items = [
   { href: "/today", label: "Hoy", Icon: Home },
-  { href: "/foods", label: "Alimentos", Icon: Search },
+  { href: "/foods/search", label: "Alimentos", Icon: Search },
   { href: "/recipes", label: "Recetas", Icon: Utensils },
   { href: "/profile", label: "Perfil", Icon: User },
 ] as const;

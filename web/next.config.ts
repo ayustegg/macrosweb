@@ -6,4 +6,13 @@ const withSerwist = withSerwistInit({
   disable: process.env.NODE_ENV !== "production",
 });
 
-export default withSerwist({});
+export default withSerwist({
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "static.openfoodfacts.org",
+      },
+    ],
+  },
+});

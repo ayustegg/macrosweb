@@ -79,23 +79,25 @@ async function offFetch<T>(
 export async function searchByName(
   query: string,
   locale = "es"
-): Promise<Food[]> {
+): Promise<{ foods: Food[]; ok: boolean }> {
   const normalized = query.trim().toLowerCase();
-  if (!normalized) return [];
+  if (!normalized) return { foods: [], ok: true };
 
   const cacheKey = `search:${locale}:${normalized}`;
   const cached = searchCache.get(cacheKey);
-  if (cached) return cached;
+  if (cached) return { foods: cached, ok: true };
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 5000);
 
-  const url = `${OFF_BASE_URL}/api/v2/search?query=${encodeURIComponent(normalized)}&lc=${locale}&fields=code,product_name,brands,image_url,nutriments,serving_size,nutriscore_grade`;
+  const url = `${OFF_BASE_URL}/api/v2/search?query=${encodeURIComponent(normalized)}&lc=${locale}&fields=code,product_name,brands,image_url,nutriments,serving_size`;
   const data = await offFetch<OffSearchResponse>(url, controller.signal);
 
   clearTimeout(timeout);
 
-  if (!data?.products?.length) return [];
+  if (data === null) return { foods: [], ok: false };
+
+  if (!data?.products?.length) return { foods: [], ok: true };
 
   const foods = data.products
     .filter((p: OffProduct) => p.product_name)
@@ -103,7 +105,7 @@ export async function searchByName(
     .map(mapOffProductToFood);
 
   searchCache.set(cacheKey, foods);
-  return foods;
+  return { foods, ok: true };
 }
 
 export async function getByBarcode(barcode: string): Promise<Food | null> {
@@ -117,7 +119,7 @@ export async function getByBarcode(barcode: string): Promise<Food | null> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 5000);
 
-  const url = `${OFF_BASE_URL}/api/v2/product/${encodeURIComponent(normalized)}.json?fields=code,product_name,brands,image_url,nutriments,serving_size,nutriscore_grade`;
+  const url = `${OFF_BASE_URL}/api/v2/product/${encodeURIComponent(normalized)}.json?fields=code,product_name,brands,image_url,nutriments,serving_size`;
   const data = await offFetch<OffProductResponse>(url, controller.signal);
 
   clearTimeout(timeout);
