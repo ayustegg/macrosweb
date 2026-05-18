@@ -92,7 +92,7 @@ export function FoodSearchResults({ query, onSelect, onCreateClick }: Props) {
 
   if (!query.trim()) {
     return (
-      <div className="flex flex-1 flex-col items-center justify-center gap-2 px-4 py-16 text-center">
+      <div className="flex flex-1 flex-col items-center justify-center gap-2 px-page py-16 text-center">
         <Search className="h-8 w-8 text-zinc-300" />
         <p className="text-sm text-zinc-400">Escribe para buscar alimentos</p>
       </div>
@@ -101,7 +101,7 @@ export function FoodSearchResults({ query, onSelect, onCreateClick }: Props) {
 
   if (state.loading) {
     return (
-      <div className="flex flex-col gap-3 px-4 pt-2">
+      <div className="flex flex-col gap-3 px-page pt-2">
         {Array.from({ length: 5 }).map((_, i) => (
           <div key={i} className="flex items-center gap-3">
             <Skeleton className="h-10 w-10 rounded-lg" />
@@ -117,7 +117,7 @@ export function FoodSearchResults({ query, onSelect, onCreateClick }: Props) {
 
   if (state.error) {
     return (
-      <div className="flex flex-1 flex-col items-center justify-center gap-2 px-4 py-16 text-center">
+      <div className="flex flex-1 flex-col items-center justify-center gap-2 px-page py-16 text-center">
         <p className="text-sm text-red-500">{state.error}</p>
         <Button
           variant="outline"
@@ -132,7 +132,7 @@ export function FoodSearchResults({ query, onSelect, onCreateClick }: Props) {
 
   if (state.results.length === 0) {
     return (
-      <div className="flex flex-1 flex-col items-center justify-center gap-3 px-4 py-16 text-center">
+      <div className="flex flex-1 flex-col items-center justify-center gap-3 px-page py-16 text-center">
         {!state.offAvailable ? (
           <>
             <CloudOff className="h-8 w-8 text-zinc-300" />
@@ -163,7 +163,7 @@ export function FoodSearchResults({ query, onSelect, onCreateClick }: Props) {
   }
 
   return (
-    <div className="flex flex-col gap-2 px-4 pt-2">
+    <div className="flex flex-col gap-2 px-page pt-2">
       {state.results.map((food) => (
         <FoodCard key={food.id} food={food} onSelect={onSelect} />
       ))}

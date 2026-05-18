@@ -12,12 +12,12 @@ interface Props {
 export function FoodSearchInput({ value, onChange }: Props) {
   return (
     <div className="relative">
-      <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-zinc-400" />
+      <Search className="pointer-events-none absolute top-1/2 left-3 h-[18px] w-[18px] -translate-y-1/2 text-muted-foreground" />
       <Input
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder="Buscar alimentos…"
-        className="h-10 pr-9 pl-9 text-base"
+        placeholder="Buscar alimento, marca o escanear…"
+        className="h-11 rounded-[14px] border-border bg-card pr-9 pl-10 text-[15px] font-medium shadow-none"
         autoComplete="off"
         autoFocus
       />

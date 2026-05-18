@@ -86,7 +86,7 @@ export function CustomFoodsList() {
 
   if (state.loading) {
     return (
-      <div className="flex flex-col gap-3 px-4 pt-2">
+      <div className="flex flex-col gap-3 px-page pt-2">
         {Array.from({ length: 4 }).map((_, i) => (
           <div key={i} className="flex items-center gap-3">
             <Skeleton className="h-10 w-10 rounded-lg" />
@@ -102,7 +102,7 @@ export function CustomFoodsList() {
 
   if (state.error) {
     return (
-      <div className="flex flex-1 flex-col items-center justify-center gap-2 px-4 py-16 text-center">
+      <div className="flex flex-1 flex-col items-center justify-center gap-2 px-page py-16 text-center">
         <p className="text-sm text-red-500">{state.error}</p>
         <Button variant="outline" size="sm" onClick={fetchFoods}>
           Reintentar
@@ -113,7 +113,7 @@ export function CustomFoodsList() {
 
   if (state.foods.length === 0) {
     return (
-      <div className="flex flex-1 flex-col items-center justify-center gap-3 px-4 py-16 text-center">
+      <div className="flex flex-1 flex-col items-center justify-center gap-3 px-page py-16 text-center">
         <Search className="h-8 w-8 text-zinc-300" />
         <p className="text-sm text-zinc-500">No tienes alimentos propios</p>
         <Button
@@ -129,7 +129,7 @@ export function CustomFoodsList() {
   }
 
   return (
-    <div className="flex flex-col gap-2 px-4 pt-2">
+    <div className="flex flex-col gap-2 px-page pt-2">
       {state.foods.map((food) => (
         <Card key={food.id} size="sm">
           <CardContent className="flex items-center gap-3">

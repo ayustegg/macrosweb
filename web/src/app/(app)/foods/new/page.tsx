@@ -8,7 +8,7 @@ export default function NewFoodPage() {
   const prefillName = searchParams.get("name") ?? undefined;
 
   return (
-    <div className="mx-auto max-w-lg px-4 py-6">
+    <div className="w-full px-page py-6 pb-3">
       <h1 className="text-2xl font-bold tracking-tight">Nuevo alimento</h1>
       <p className="mt-1 mb-6 text-sm text-zinc-500 dark:text-zinc-400">
         Crea un alimento personalizado

@@ -1,13 +1,13 @@
 {
-  "name": "macrosweb",
-  "short_name": "macrosweb",
-  "description": "Track your macros, reach your goals",
+  "name": "Mido",
+  "short_name": "Mido",
+  "description": "Controla tus macros, alcanza tus metas",
   "start_url": "/today",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "theme_color": "#ffffff",
-  "background_color": "#ffffff",
+  "theme_color": "#f7f6f4",
+  "background_color": "#f7f6f4",
   "icons": [
     {
       "src": "/icons/icon-192.svg",

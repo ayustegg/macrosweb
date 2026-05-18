@@ -15,7 +15,7 @@ export default async function EditFoodPage({ params }: Props) {
   }
 
   return (
-    <div className="mx-auto max-w-lg px-4 py-6">
+    <div className="w-full px-page py-6 pb-3">
       <h1 className="text-2xl font-bold tracking-tight">Editar alimento</h1>
       <p className="mt-1 mb-6 text-sm text-zinc-500 dark:text-zinc-400">
         {food.name}

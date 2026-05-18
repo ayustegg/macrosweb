@@ -6,7 +6,7 @@ const demos = [
   {
     value: 0,
     target: 2200,
-    color: "#f43f5e",
+    color: "oklch(0.55 0.15 35)",
     label: "Calorías",
     unit: "kcal",
     title: "0%",
@@ -14,7 +14,7 @@ const demos = [
   {
     value: 1100,
     target: 2200,
-    color: "#f43f5e",
+    color: "oklch(0.55 0.15 35)",
     label: "Calorías",
     unit: "kcal",
     title: "50%",
@@ -22,7 +22,7 @@ const demos = [
   {
     value: 2200,
     target: 2200,
-    color: "#f43f5e",
+    color: "oklch(0.55 0.15 35)",
     label: "Calorías",
     unit: "kcal",
     title: "100%",
@@ -30,7 +30,7 @@ const demos = [
   {
     value: 2420,
     target: 2200,
-    color: "#f43f5e",
+    color: "oklch(0.55 0.15 35)",
     label: "Calorías",
     unit: "kcal",
     title: "110%",
@@ -38,7 +38,7 @@ const demos = [
   {
     value: 3300,
     target: 2200,
-    color: "#f43f5e",
+    color: "oklch(0.55 0.15 35)",
     label: "Calorías",
     unit: "kcal",
     title: "150%",
@@ -49,24 +49,24 @@ const fourMacros = [
   {
     value: 1850,
     target: 2200,
-    color: "#f43f5e",
+    color: "oklch(0.55 0.15 35)",
     label: "Calorías",
     unit: "kcal",
   },
-  { value: 95, target: 100, color: "#3b82f6", label: "Proteína", unit: "g" },
+  { value: 95, target: 100, color: "oklch(0.55 0.15 250)", label: "Proteína", unit: "g" },
   {
     value: 220,
     target: 200,
-    color: "#f59e0b",
+    color: "oklch(0.60 0.15 85)",
     label: "Carbohidratos",
     unit: "g",
   },
-  { value: 72, target: 65, color: "#a855f7", label: "Grasa", unit: "g" },
+  { value: 72, target: 65, color: "oklch(0.55 0.15 290)", label: "Grasa", unit: "g" },
 ];
 
 export default function MacroRingDevPage() {
   return (
-    <div className="mx-auto max-w-2xl space-y-12 px-4 py-12">
+    <div className="mx-auto max-w-2xl space-y-12 px-4 py-12 bg-background">
       <section>
         <h1 className="mb-2 text-2xl font-bold">MacroRing — Demo</h1>
         <p className="text-muted-foreground mb-8 text-sm">

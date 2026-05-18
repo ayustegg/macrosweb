@@ -11,36 +11,41 @@ const items = [
   { href: "/profile", label: "Perfil", Icon: User },
 ] as const;
 
+/** In-flow tab bar (not fixed). Safe-area padding is on the shell via pb-safe. */
 export function BottomNav() {
   const pathname = usePathname();
 
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-50 flex items-center justify-around border-t bg-white pb-[env(safe-area-inset-bottom)] dark:border-zinc-800 dark:bg-black"
-      style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
+      className="app-bottom-nav shrink-0 w-full border-t border-border/80 bg-background/90 backdrop-blur-xl backdrop-saturate-150"
+      aria-label="Navegación principal"
     >
-      {items.map(({ href, label, Icon }) => {
-        const active = pathname === href || pathname.startsWith(href + "/");
+      <div className="grid w-full grid-cols-4 px-page pt-1 pb-1">
+        {items.map(({ href, label, Icon }) => {
+          const active =
+            pathname === href || pathname.startsWith(href + "/");
 
-        return (
-          <Link
-            key={href}
-            href={href}
-            className={`flex flex-1 flex-col items-center gap-0.5 py-2 text-xs transition-colors ${
-              active
-                ? "text-zinc-900 dark:text-zinc-100"
-                : "text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
-            }`}
-          >
-            <Icon
-              className="h-5 w-5"
-              strokeWidth={active ? 2.5 : 1.5}
-              aria-hidden
-            />
-            <span>{label}</span>
-          </Link>
-        );
-      })}
+          return (
+            <Link
+              key={href}
+              href={href}
+              className={`flex flex-col items-center gap-0.5 py-1 transition-colors ${
+                active ? "text-foreground" : "text-muted-foreground"
+              }`}
+            >
+              <Icon
+                className="h-6 w-6"
+                strokeWidth={active ? 2.25 : 1.75}
+                fill={active ? "currentColor" : "none"}
+                aria-hidden
+              />
+              <span className="text-[10px] font-semibold leading-none tracking-wide">
+                {label}
+              </span>
+            </Link>
+          );
+        })}
+      </div>
     </nav>
   );
 }

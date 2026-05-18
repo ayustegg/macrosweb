@@ -23,7 +23,7 @@ function todayInTimezone(tz: string): string {
     month: "2-digit",
     day: "2-digit",
   });
-  return formatter.format(new Date()); // fr-CA → YYYY-MM-DD
+  return formatter.format(new Date());
 }
 
 function addDays(dateStr: string, n: number): string {
@@ -52,18 +52,19 @@ function formatLabel(dateStr: string, today: string): string {
   if (diff === 1) return "Mañana";
   const d = new Date(dateStr + "T12:00:00");
   return d.toLocaleDateString("es", {
+    weekday: "long",
     day: "numeric",
     month: "short",
     year: "numeric",
   });
 }
 
-function formatShort(dateStr: string): string {
+function formatSubline(dateStr: string): string {
   const d = new Date(dateStr + "T12:00:00");
   return d.toLocaleDateString("es", {
-    weekday: "short",
     day: "numeric",
-    month: "short",
+    month: "long",
+    year: "numeric",
   });
 }
 
@@ -97,7 +98,6 @@ export function DayNavigator({ date, timezone = "UTC" }: Props) {
     [date, goTo, today]
   );
 
-  // Touch swipe handlers
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     swipeRef.current = {
       startX: e.touches[0]!.clientX,
@@ -118,7 +118,6 @@ export function DayNavigator({ date, timezone = "UTC" }: Props) {
     [goToRelative]
   );
 
-  // Keyboard: left/right arrows
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
       if (
@@ -134,11 +133,11 @@ export function DayNavigator({ date, timezone = "UTC" }: Props) {
   }, [goToRelative]);
 
   const label = formatLabel(date, today);
-  const shortLabel = diffDays(date, today) === 0 ? "" : formatShort(date);
+  const subline = formatSubline(date);
 
   return (
     <div
-      className="flex items-center justify-between"
+      className="mb-3.5 flex items-center justify-between px-2"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
@@ -147,22 +146,23 @@ export function DayNavigator({ date, timezone = "UTC" }: Props) {
         size="icon"
         onClick={() => goToRelative(-1)}
         aria-label="Día anterior"
+        className="size-10 rounded-full"
       >
-        <ChevronLeft className="h-5 w-5" />
+        <ChevronLeft className="h-[22px] w-[22px]" />
       </Button>
 
       <Popover open={pickerOpen} onOpenChange={setPickerOpen}>
         <PopoverTrigger asChild>
           <button
             type="button"
-            className="flex flex-col items-center gap-0.5 text-center outline-none"
+            className="flex flex-col items-center gap-1 text-center outline-none"
           >
-            <span className="text-sm font-semibold capitalize">{label}</span>
-            {shortLabel && (
-              <span className="text-muted-foreground text-xs">
-                {shortLabel}
-              </span>
-            )}
+            <span className="num text-[19px] leading-tight font-semibold capitalize">
+              {label}
+            </span>
+            <span className="text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
+              {subline}
+            </span>
           </button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0">
@@ -193,8 +193,9 @@ export function DayNavigator({ date, timezone = "UTC" }: Props) {
         onClick={() => goToRelative(1)}
         disabled={!canGoForward}
         aria-label="Día siguiente"
+        className="size-10 rounded-full disabled:opacity-40"
       >
-        <ChevronRight className="h-5 w-5" />
+        <ChevronRight className="h-[22px] w-[22px]" />
       </Button>
     </div>
   );

@@ -27,13 +27,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "macrosweb",
-  description: "Track your macros, reach your goals",
+  title: "Mido",
+  description: "Controla tus macros, alcanza tus metas",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "macrosweb",
+    title: "Mido",
   },
   formatDetection: {
     telephone: false,
@@ -49,7 +49,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 5,
   viewportFit: "cover",
-  themeColor: "#ffffff",
+  themeColor: "#f7f6f4",
 };
 
 export default function RootLayout({
@@ -59,7 +59,7 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
+      lang="es"
       className={cn(
         "h-full",
         "antialiased",
@@ -70,7 +70,7 @@ export default function RootLayout({
         playfairDisplayHeading.variable
       )}
     >
-      <body className="flex min-h-full flex-col">
+      <body className="h-[100dvh] w-full">
         {children}
         <Toaster />
       </body>

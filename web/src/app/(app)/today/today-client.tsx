@@ -2,10 +2,10 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { DayNavigator } from "@/components/features/meals/day-navigator";
 import { MealSlotCard } from "@/features/meals/components/meal-slot-card";
 import { DailyMacroSummary } from "@/components/features/macros/daily-macro-summary";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { usePullToRefresh } from "@/hooks/use-pull-to-refresh";
 import type { DayLogWithEntries, SlotTotals } from "@/features/meals/queries";
@@ -233,7 +233,7 @@ export function TodayPageClient({
 
   return (
     <div
-      className="mx-auto max-w-md space-y-4 px-4 pt-4 pb-24"
+      className="w-full"
       {...pullHandlers}
     >
       {(pulling || refreshing) && (
@@ -241,11 +241,23 @@ export function TodayPageClient({
           {refreshing ? "Actualizando..." : "Suelta para actualizar"}
         </div>
       )}
-      <DayNavigator date={date} timezone={timezone} />
-      <DailyMacroSummary summary={summary} goal={goal} />
+
+      <div className="space-y-3.5 px-page pt-2">
+        <DayNavigator date={date} timezone={timezone} />
+        <DailyMacroSummary summary={summary} goal={goal} />
+        <div className="flex items-baseline justify-between px-1 pt-1">
+          <span className="section-label">Comidas del día</span>
+          <Link
+            href="/profile"
+            className="text-xs font-semibold text-muted-foreground hover:text-foreground"
+          >
+            Editar comidas
+          </Link>
+        </div>
+      </div>
 
       {hasEntries ? (
-        <div className="space-y-3">
+        <div className="px-page">
           {slots.map((slot) => {
             const slotData = dayLogData?.slots[slot.id];
             return (
@@ -280,41 +292,22 @@ export function TodayPageClient({
 
 function EmptyDay({ date }: { date: string }) {
   return (
-    <div className="flex flex-col items-center justify-center px-4 pt-8 pb-16 text-center">
-      <svg
-        viewBox="0 0 120 120"
-        className="mb-5 h-32 w-32 text-zinc-300 dark:text-zinc-600"
-        fill="none"
-      >
-        <circle
-          cx="60"
-          cy="60"
-          r="48"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeDasharray="6 4"
-        />
-        <path
-          d="M72 72 Q84 60 72 48"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
+    <div className="flex flex-col items-center justify-center px-page pt-8 pb-16 text-center">
+      <div className="mb-5 grid h-32 w-32 place-items-center rounded-full bg-muted">
+        <svg
+          viewBox="0 0 64 64"
+          className="h-16 w-16 text-muted-foreground"
           fill="none"
-        />
-        <path
-          d="M48 72 Q36 60 48 48"
           stroke="currentColor"
-          strokeWidth="2"
+          strokeWidth="1.5"
           strokeLinecap="round"
-          fill="none"
-        />
-        <path
-          d="M42 42 L36 36 M78 42 L84 36 M60 36 V28"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-        />
-      </svg>
+        >
+          <circle cx="32" cy="32" r="24" strokeDasharray="4 3" />
+          <path d="M38 38 Q44 32 38 26" />
+          <path d="M26 38 Q20 32 26 26" />
+          <path d="M22 22 L19 19 M42 22 L45 19 M32 20 V15" />
+        </svg>
+      </div>
       <h2 className="mb-1 text-lg font-semibold">Sin registros hoy</h2>
       <p className="text-muted-foreground mb-6 max-w-64 text-sm">
         Aún no has añadido nada. Busca un alimento para empezar a registrar tu
@@ -329,51 +322,21 @@ function EmptyDay({ date }: { date: string }) {
 
 function FirstTimeWelcome() {
   return (
-    <div className="flex flex-col items-center justify-center px-4 pt-8 pb-16 text-center">
-      <svg
-        viewBox="0 0 120 120"
-        className="mb-5 h-32 w-32 text-amber-400"
-        fill="none"
-      >
-        <path
-          d="M60 20 L64 44 L88 44 L68 58 L76 82 L60 66 L44 82 L52 58 L32 44 L56 44 Z"
-          fill="currentColor"
-          opacity="0.9"
-        />
-        <circle
-          cx="60"
-          cy="60"
-          r="36"
+    <div className="flex flex-col items-center justify-center px-page pt-8 pb-16 text-center">
+      <div className="mb-5 grid h-32 w-32 place-items-center rounded-full bg-muted">
+        <svg
+          viewBox="0 0 64 64"
+          className="h-16 w-16 text-macro-car"
+          fill="none"
           stroke="currentColor"
           strokeWidth="1.5"
-          opacity="0.3"
-          strokeDasharray="4 3"
-        />
-        <path
-          d="M60 24 V18"
-          stroke="currentColor"
-          strokeWidth="2"
           strokeLinecap="round"
-        />
-        <path
-          d="M60 102 V96"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-        />
-        <path
-          d="M24 60 H18"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-        />
-        <path
-          d="M102 60 H96"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-        />
-      </svg>
+        >
+          <path d="M32 12 L35 26 L48 26 L38 34 L42 48 L32 40 L22 48 L26 34 L16 26 L29 26 Z" />
+          <circle cx="32" cy="32" r="24" strokeDasharray="4 3" opacity="0.3" />
+          <path d="M32 8 V4 M32 60 V56 M8 32 H4 M60 32 H56" />
+        </svg>
+      </div>
       <h2 className="mb-1 text-lg font-semibold">¡Bienvenido!</h2>
       <p className="text-muted-foreground mb-6 max-w-72 text-sm leading-relaxed">
         Este es tu diario de comidas. Busca alimentos, añádelos a tus momentos

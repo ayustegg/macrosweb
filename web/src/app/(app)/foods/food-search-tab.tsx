@@ -29,7 +29,7 @@ export function FoodSearchPageTab() {
 
   return (
     <div className="flex flex-1 flex-col">
-      <div className="px-4 pt-3 pb-2">
+      <div className="px-page pt-3 pb-2">
         <FoodSearchInput value={input} onChange={setInput} />
       </div>
 
