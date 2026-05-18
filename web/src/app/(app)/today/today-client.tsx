@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { DayNavigator } from "@/components/features/meals/day-navigator";
 import { MealSlotCard } from "@/features/meals/components/meal-slot-card";
 import { DailyMacroSummary } from "@/components/features/macros/daily-macro-summary";
 import { Button } from "@/components/ui/button";
+import { usePullToRefresh } from "@/hooks/use-pull-to-refresh";
 import type { DayLogWithEntries, SlotTotals } from "@/features/meals/queries";
 import type { MealSlot } from "@/features/meals/types";
 import type { Entry } from "@/types/entry";
@@ -89,9 +91,15 @@ export function TodayPageClient({
   timezone,
   hasAnyEntry = false,
 }: Props) {
+  const router = useRouter();
   const [dayLogData, setDayLogData] = useState(() => dayLog);
   const snapshotRef = useRef<DayLogWithEntries | null>(null);
   const slots = useSlots();
+  const {
+    refreshing,
+    pulling,
+    handlers: pullHandlers,
+  } = usePullToRefresh(() => router.refresh());
 
   // --- Optimistic callbacks with rollback ---
 
@@ -224,7 +232,15 @@ export function TodayPageClient({
   const hasEntries = dayLogData && Object.keys(dayLogData.slots).length > 0;
 
   return (
-    <div className="mx-auto max-w-md space-y-4 px-4 pt-4 pb-24">
+    <div
+      className="mx-auto max-w-md space-y-4 px-4 pt-4 pb-24"
+      {...pullHandlers}
+    >
+      {(pulling || refreshing) && (
+        <div className="text-muted-foreground flex justify-center py-2 text-xs">
+          {refreshing ? "Actualizando..." : "Suelta para actualizar"}
+        </div>
+      )}
       <DayNavigator date={date} timezone={timezone} />
       <DailyMacroSummary summary={summary} goal={goal} />
 

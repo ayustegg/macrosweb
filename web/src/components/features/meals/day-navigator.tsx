@@ -9,6 +9,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
 
 interface Props {
   date: string;
@@ -135,18 +136,6 @@ export function DayNavigator({ date, timezone = "UTC" }: Props) {
   const label = formatLabel(date, today);
   const shortLabel = diffDays(date, today) === 0 ? "" : formatShort(date);
 
-  // Picker handlers: convert between string date and native input value
-  const handlePickerChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const val = e.target.value;
-      if (val && val <= today) {
-        goTo(val);
-        setPickerOpen(false);
-      }
-    },
-    [goTo, today]
-  );
-
   return (
     <div
       className="flex items-center justify-between"
@@ -176,14 +165,24 @@ export function DayNavigator({ date, timezone = "UTC" }: Props) {
             )}
           </button>
         </PopoverTrigger>
-        <PopoverContent className="w-auto p-3">
-          <input
-            type="date"
-            value={date}
-            max={today}
-            onChange={handlePickerChange}
-            className="bg-background focus:ring-ring w-full rounded-lg border px-3 py-2 text-sm focus:ring-2 focus:outline-none"
-            aria-label="Seleccionar fecha"
+        <PopoverContent className="w-auto p-0">
+          <Calendar
+            mode="single"
+            selected={new Date(date + "T12:00:00")}
+            onSelect={(day) => {
+              if (!day) return;
+              const dateStr =
+                day.getFullYear() +
+                "-" +
+                String(day.getMonth() + 1).padStart(2, "0") +
+                "-" +
+                String(day.getDate()).padStart(2, "0");
+              if (dateStr <= today) {
+                goTo(dateStr);
+                setPickerOpen(false);
+              }
+            }}
+            disabled={[{ after: new Date(today + "T12:00:00") }]}
           />
         </PopoverContent>
       </Popover>
