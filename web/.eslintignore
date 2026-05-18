@@ -1,0 +1,19 @@
+# Build outputs
+.next/
+out/
+dist/
+build/
+
+# Dependencies
+node_modules/
+
+# Generated files
+public/sw.js
+
+# Config files
+*.config.mjs
+*.config.ts
+
+# Environment
+.env.local
+.env.*.local

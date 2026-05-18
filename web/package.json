@@ -11,12 +11,16 @@
     "test": "vitest",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "prepare": "husky"
+    "prepare": "husky",
+    "supabase:types": "supabase gen types typescript --linked > src/lib/supabase/database.types.ts"
   },
   "dependencies": {
+    "@supabase/ssr": "^0.10.3",
+    "@supabase/supabase-js": "^2.105.4",
     "next": "15.5.18",
     "react": "19",
-    "react-dom": "19"
+    "react-dom": "19",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@serwist/next": "^9.5.11",
