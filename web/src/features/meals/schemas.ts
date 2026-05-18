@@ -28,3 +28,14 @@ export const updateEntrySchema = z.object({
 });
 
 export type UpdateEntryInput = z.infer<typeof updateEntrySchema>;
+
+export const addEntryActionSchema = z.object({
+  date: z.string().min(1, "La fecha es obligatoria"),
+  meal_slot_id: z.string().optional(),
+  source_type: z.enum(["food", "recipe"]),
+  source_id: z.string().uuid("ID de origen inválido"),
+  quantity: z.coerce.number().positive("La cantidad debe ser mayor a 0"),
+  unit: z.enum(["g", "ml", "serving"]),
+});
+
+export type AddEntryActionInput = z.infer<typeof addEntryActionSchema>;
