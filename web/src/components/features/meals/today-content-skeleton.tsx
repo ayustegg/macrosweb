@@ -1,9 +1,8 @@
 import { MultiMacroRing } from "@/components/features/macros/multi-macro-ring";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CONTENT_FADE_IN } from "@/lib/content-fade";
+import { COMPACT_MACRO_RING_PX } from "@/lib/macro-ring-layout";
 import { cn } from "@/lib/utils";
-
-const COMPACT_RING = 52;
 
 interface MacroTotals {
   kcal: number;
@@ -35,26 +34,26 @@ function MacroSummarySkeleton({
   animationKey: string;
 }) {
   return (
-    <section className="border-border bg-card shadow-app-1 overflow-hidden rounded-[22px] border">
+    <section className="border-border bg-card shadow-app-1 macro-summary-card overflow-hidden rounded-[22px] border">
       <div className="flex w-full items-center gap-3 px-3 py-2.5">
         {goal ? (
           <div
-            className="shrink-0"
-            style={{ width: COMPACT_RING, height: COMPACT_RING }}
+            className="macro-ring-slot shrink-0"
+            style={{ width: COMPACT_MACRO_RING_PX, height: COMPACT_MACRO_RING_PX }}
           >
             <MultiMacroRing
               key={animationKey}
               totals={summary}
               target={goal}
-              size={COMPACT_RING}
+              size={COMPACT_MACRO_RING_PX}
               compact
               animateIn
             />
           </div>
         ) : (
           <Skeleton
-            className="size-[52px] shrink-0 rounded-full"
-            style={{ width: COMPACT_RING, height: COMPACT_RING }}
+            className="macro-ring-slot size-[52px] shrink-0 rounded-full"
+            style={{ width: COMPACT_MACRO_RING_PX, height: COMPACT_MACRO_RING_PX }}
           />
         )}
 
