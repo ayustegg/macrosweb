@@ -131,60 +131,71 @@ export function TodayPageClient({
 
   return (
     <PullToRefresh onRefresh={() => router.refresh()}>
-      <div className="px-page space-y-3.5 pt-2">
+      <div className="px-page flex flex-col gap-3.5 pt-2 pb-4">
         <DayNavigator date={date} timezone={timezone} />
+
         {isDateNavigating ? (
           <TodayContentSkeleton />
         ) : (
           <>
             <DailyMacroSummary summary={summary} goal={goal} />
-            <div className="flex items-baseline justify-between px-1 pt-1">
-              <span className="section-label">Comidas del día</span>
-              <Link
-                href="/profile"
-                className="text-muted-foreground hover:text-foreground text-xs font-semibold"
-              >
-                Editar comidas
-              </Link>
-            </div>
+            <MealsSectionHeader />
+            {hasEntries ? (
+              <div className="flex flex-col gap-3.5">
+                {mealSlots.map((slot) => {
+                  const slotData = dayLogData?.slots[slot.id];
+                  return (
+                    <MealSlotCard
+                      key={slot.id}
+                      slotId={slot.id}
+                      slotName={slot.name}
+                      slotData={
+                        slotData ?? {
+                          entries: [],
+                          totals: {
+                            kcal: 0,
+                            protein_g: 0,
+                            carbs_g: 0,
+                            fat_g: 0,
+                          },
+                        }
+                      }
+                      date={date}
+                      onDeleteEntry={handleDeleteEntry}
+                      onRollback={rollback}
+                    />
+                  );
+                })}
+              </div>
+            ) : hasAnyEntry ? (
+              <EmptyDay date={date} />
+            ) : (
+              <FirstTimeWelcome />
+            )}
           </>
         )}
       </div>
-
-      {!isDateNavigating && hasEntries ? (
-        <div className="px-page">
-          {mealSlots.map((slot) => {
-            const slotData = dayLogData?.slots[slot.id];
-            return (
-              <MealSlotCard
-                key={slot.id}
-                slotId={slot.id}
-                slotName={slot.name}
-                slotData={
-                  slotData ?? {
-                    entries: [],
-                    totals: { kcal: 0, protein_g: 0, carbs_g: 0, fat_g: 0 },
-                  }
-                }
-                date={date}
-                onDeleteEntry={handleDeleteEntry}
-                onRollback={rollback}
-              />
-            );
-          })}
-        </div>
-      ) : !isDateNavigating && hasAnyEntry ? (
-        <EmptyDay date={date} />
-      ) : !isDateNavigating ? (
-        <FirstTimeWelcome />
-      ) : null}
     </PullToRefresh>
+  );
+}
+
+function MealsSectionHeader() {
+  return (
+    <div className="flex items-baseline justify-between px-1">
+      <span className="section-label">Comidas del día</span>
+      <Link
+        href="/profile"
+        className="text-muted-foreground hover:text-foreground text-xs font-semibold"
+      >
+        Editar comidas
+      </Link>
+    </div>
   );
 }
 
 function EmptyDay({ date }: { date: string }) {
   return (
-    <div className="px-page flex flex-col items-center justify-center pt-8 pb-16 text-center">
+    <div className="flex flex-col items-center justify-center pt-4 pb-12 text-center">
       <div className="bg-muted mb-5 grid h-32 w-32 place-items-center rounded-full">
         <svg
           viewBox="0 0 64 64"
@@ -214,7 +225,7 @@ function EmptyDay({ date }: { date: string }) {
 
 function FirstTimeWelcome() {
   return (
-    <div className="px-page flex flex-col items-center justify-center pt-8 pb-16 text-center">
+    <div className="flex flex-col items-center justify-center pt-4 pb-12 text-center">
       <div className="bg-muted mb-5 grid h-32 w-32 place-items-center rounded-full">
         <svg
           viewBox="0 0 64 64"

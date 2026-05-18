@@ -54,10 +54,7 @@ export function MealSlotCard({
   onRollback,
 }: Props) {
   return (
-    <div
-      className="border-border bg-card shadow-app-1 overflow-hidden rounded-[22px] border"
-      style={{ marginBottom: "var(--slot-gap)" }}
-    >
+    <div className="border-border bg-card shadow-app-1 overflow-hidden rounded-[22px] border">
       <div className="flex items-center justify-between px-4 pt-3.5 pb-2.5">
         <div className="flex items-center gap-2.5">
           <div className="bg-secondary text-accent-foreground flex size-7 items-center justify-center rounded-lg">

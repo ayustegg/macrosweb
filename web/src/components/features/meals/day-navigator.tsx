@@ -144,7 +144,7 @@ export function DayNavigator({ date, timezone = "UTC" }: Props) {
 
   return (
     <section
-      className="border-border bg-card shadow-app-1 mb-3.5 overflow-hidden rounded-[22px] border"
+      className="border-border bg-card shadow-app-1 overflow-hidden rounded-[22px] border"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >

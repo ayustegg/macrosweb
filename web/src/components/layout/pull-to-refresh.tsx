@@ -36,7 +36,10 @@ export function PullToRefresh({
   const showPullHint = pullDistance > 0 && !refreshing;
 
   return (
-    <div ref={containerRef} className={cn("relative w-full", className)}>
+    <div
+      ref={containerRef}
+      className={cn("relative min-h-0 w-full", className)}
+    >
       <div
         aria-hidden
         className="pointer-events-none absolute inset-x-0 top-0 z-10 flex justify-center overflow-hidden"
