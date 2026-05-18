@@ -32,7 +32,8 @@ export const metadata: Metadata = {
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
-    statusBarStyle: "black-translucent",
+    // default: contenido bajo la status bar opaca (theme-color), sin banda extra por safe-area-top
+    statusBarStyle: "default",
     title: "Mido",
   },
   formatDetection: {
