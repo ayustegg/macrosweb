@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
+import Link from "next/link";
+import { Plus } from "lucide-react";
 import { DayNavigator } from "@/components/features/meals/day-navigator";
 import { MealSlotCard } from "@/features/meals/components/meal-slot-card";
 import { DailyMacroSummary } from "@/components/features/macros/daily-macro-summary";
@@ -252,6 +254,13 @@ export function TodayPageClient({ dayLog, goal, date, timezone }: Props) {
           <p className="text-muted-foreground mb-6 text-sm">
             Añade tu primera comida del día para empezar.
           </p>
+          <Link
+            href="/foods/search"
+            className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex h-10 items-center justify-center rounded-md px-6 text-sm font-medium"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Añadir comida
+          </Link>
         </div>
       )}
     </div>

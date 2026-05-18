@@ -119,7 +119,7 @@ export async function addEntry(
 
     await recalculateDayLogTotals(dayLog.id);
 
-    revalidatePath(`/today?date=${date}`);
+    revalidatePath("/today");
 
     return { ok: true, data: entry as unknown as Entry };
   } catch (err) {
@@ -238,7 +238,7 @@ export async function updateEntry(
 
     await recalculateDayLogTotals(entry.day_log_id);
 
-    revalidatePath(`/today?date=${dayLog.date}`);
+    revalidatePath("/today");
 
     return { ok: true, data: updated as unknown as Entry };
   } catch (err) {
@@ -285,7 +285,7 @@ export async function deleteEntry(id: string): Promise<ActionResult<void>> {
 
   await recalculateDayLogTotals(entry.day_log_id);
 
-  revalidatePath(`/today?date=${dayLog.date}`);
+  revalidatePath("/today");
 
   return { ok: true, data: undefined };
 }
