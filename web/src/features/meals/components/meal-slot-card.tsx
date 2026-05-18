@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { EntryActions } from "@/features/meals/components/entry-actions";
 import type { Entry } from "@/types/entry";
 import type { SlotTotals } from "@/features/meals/queries";
+import type { MealSlot } from "@/features/meals/types";
 
 interface SlotEntries {
   entries: Entry[];
@@ -17,9 +18,23 @@ interface Props {
   slotId: string;
   slotName: string;
   slotData: SlotEntries;
+  allSlots?: MealSlot[];
+  onUpdateEntry?: (entry: Entry) => void;
+  onDeleteEntry?: (entryId: string) => void;
+  onMoveEntry?: (entryId: string, newSlotId: string) => void;
+  onRollback?: () => void;
 }
 
-export function MealSlotCard({ slotId, slotName, slotData }: Props) {
+export function MealSlotCard({
+  slotId,
+  slotName,
+  slotData,
+  allSlots = [],
+  onUpdateEntry,
+  onDeleteEntry,
+  onMoveEntry,
+  onRollback,
+}: Props) {
   const [editingEntry, setEditingEntry] = useState<Entry | null>(null);
 
   return (
@@ -78,10 +93,15 @@ export function MealSlotCard({ slotId, slotName, slotData }: Props) {
         <EntryActions
           key={editingEntry.id}
           entry={editingEntry}
+          allSlots={allSlots}
           open={!!editingEntry}
           onOpenChange={(open) => {
             if (!open) setEditingEntry(null);
           }}
+          onUpdate={onUpdateEntry}
+          onDelete={onDeleteEntry}
+          onMove={onMoveEntry}
+          onRollback={onRollback}
         />
       )}
     </>
