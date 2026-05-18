@@ -39,3 +39,21 @@ export const addEntryActionSchema = z.object({
 });
 
 export type AddEntryActionInput = z.infer<typeof addEntryActionSchema>;
+
+export const renameSlotSchema = z.object({
+  id: z.string().uuid(),
+  name: z.string().min(1, "El nombre es obligatorio").max(50),
+});
+
+export const addSlotSchema = z.object({
+  name: z.string().min(1, "El nombre es obligatorio").max(50),
+});
+
+export const reorderSlotsSchema = z.object({
+  ids: z.array(z.string().uuid()).min(1, "Debe haber al menos un slot"),
+});
+
+export const deleteSlotSchema = z.object({
+  id: z.string().uuid(),
+  migrateToId: z.string().uuid().optional(),
+});

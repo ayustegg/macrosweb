@@ -1,5 +1,7 @@
 import { getCurrentUser } from "@/features/auth/queries";
 import { getProfile, getActiveGoal } from "@/features/profile/queries";
+import { getMealSlots } from "@/features/meals/queries";
+import { MealSlotList } from "@/features/meals/components/meal-slot-list";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 
@@ -7,9 +9,10 @@ export default async function ProfilePage() {
   const user = await getCurrentUser();
   if (!user) notFound();
 
-  const [profile, goal] = await Promise.all([
+  const [profile, goal, slots] = await Promise.all([
     getProfile(user.id),
     getActiveGoal(user.id),
+    getMealSlots(),
   ]);
 
   return (
@@ -17,7 +20,7 @@ export default async function ProfilePage() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Perfil</h1>
         <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-          Tus datos y objetivos
+          Tus datos, objetivos y comidas
         </p>
       </div>
 
@@ -47,9 +50,9 @@ export default async function ProfilePage() {
         </div>
       </section>
 
-      {goal && (
-        <section className="space-y-4">
-          <h2 className="text-lg font-semibold">Objetivo diario</h2>
+      <section className="space-y-4">
+        <h2 className="text-lg font-semibold">Objetivo diario</h2>
+        {goal ? (
           <div className="space-y-3 rounded-lg border p-4">
             <Row label="Calorías" value={`${goal.kcal} kcal`} />
             <Row label="Proteína" value={`${goal.protein_g} g`} />
@@ -59,8 +62,18 @@ export default async function ProfilePage() {
               <p className="text-xs text-zinc-400">Calculado automáticamente</p>
             )}
           </div>
-        </section>
-      )}
+        ) : (
+          <p className="text-sm text-zinc-400">Sin objetivo definido</p>
+        )}
+      </section>
+
+      <section className="space-y-4">
+        <h2 className="text-lg font-semibold">Mis comidas</h2>
+        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+          Reordena, renombra, añade o elimina momentos del día.
+        </p>
+        <MealSlotList initialSlots={slots} />
+      </section>
 
       <Link
         href="/profile/edit"

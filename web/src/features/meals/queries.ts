@@ -2,6 +2,7 @@ import "server-only";
 
 import { createClient } from "@/lib/supabase/server";
 import type { Entry } from "@/types/entry";
+import type { MealSlot } from "@/features/meals/types";
 
 export interface DayLogWithTotals {
   id: string;
@@ -52,6 +53,22 @@ function aggregateBySlot(
   }
 
   return result;
+}
+
+export async function getMealSlots(): Promise<MealSlot[]> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return [];
+
+  const { data } = await supabase
+    .from("meal_slots")
+    .select("id, name, order_index")
+    .eq("owner_id", user.id)
+    .order("order_index");
+
+  return (data ?? []) as MealSlot[];
 }
 
 export async function getDayLog(
