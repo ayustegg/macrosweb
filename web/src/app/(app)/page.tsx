@@ -1,5 +1,5 @@
 import { getCurrentUser } from "@/features/auth/queries";
-import { getDayLog } from "@/features/meals/queries";
+import { getDayLog, getMealSlots } from "@/features/meals/queries";
 import { getProfile, getActiveGoal } from "@/features/profile/queries";
 import { TodayPageClient } from "@/app/(app)/today-client";
 import { notFound } from "next/navigation";
@@ -22,10 +22,13 @@ export default async function TodayPage({ searchParams }: Props) {
   const user = await getCurrentUser();
   if (!user) notFound();
 
-  const profile = await getProfile(user.id);
-  const tz = profile?.timezone ?? "UTC";
+  const [{ date: paramDate }, profile, mealSlots] = await Promise.all([
+    searchParams,
+    getProfile(user.id),
+    getMealSlots(),
+  ]);
 
-  const { date: paramDate } = await searchParams;
+  const tz = profile?.timezone ?? "UTC";
   const date = paramDate ?? todayInTimezone(tz);
 
   const [dayLog, goal] = await Promise.all([
@@ -38,6 +41,7 @@ export default async function TodayPage({ searchParams }: Props) {
       key={date}
       dayLog={dayLog}
       goal={goal}
+      mealSlots={mealSlots}
       date={date}
       timezone={tz}
     />

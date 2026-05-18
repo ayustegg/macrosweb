@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useRef, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { DayNavigator } from "@/components/features/meals/day-navigator";
 import { MealSlotCard } from "@/features/meals/components/meal-slot-card";
@@ -22,13 +22,10 @@ interface Goal {
 interface Props {
   dayLog: DayLogWithEntries | null;
   goal: Goal | null;
+  mealSlots: MealSlot[];
   date: string;
   timezone?: string;
   hasAnyEntry?: boolean;
-}
-
-interface FetchResponse {
-  slots: MealSlot[];
 }
 
 function recalcSlotTotals(entries: Entry[]): SlotTotals {
@@ -64,29 +61,10 @@ function recalcDailyTotals(
   };
 }
 
-async function fetchSlots(): Promise<MealSlot[]> {
-  const res = await fetch("/api/meal-slots");
-  if (!res.ok) return [];
-  const json: FetchResponse = await res.json();
-  return json.slots;
-}
-
-function useSlots(): MealSlot[] {
-  const [slots, setSlots] = useState<MealSlot[]>([]);
-  const initiated = useRef(false);
-  useEffect(() => {
-    if (initiated.current) return;
-    initiated.current = true;
-    fetchSlots()
-      .then(setSlots)
-      .catch(() => setSlots([]));
-  }, []);
-  return slots;
-}
-
 export function TodayPageClient({
   dayLog,
   goal,
+  mealSlots,
   date,
   timezone,
   hasAnyEntry = false,
@@ -94,7 +72,6 @@ export function TodayPageClient({
   const router = useRouter();
   const [dayLogData, setDayLogData] = useState(() => dayLog);
   const snapshotRef = useRef<DayLogWithEntries | null>(null);
-  const slots = useSlots();
 
   // --- Optimistic callbacks with rollback ---
 
@@ -167,7 +144,7 @@ export function TodayPageClient({
 
       {hasEntries ? (
         <div className="px-page">
-          {slots.map((slot) => {
+          {mealSlots.map((slot) => {
             const slotData = dayLogData?.slots[slot.id];
             return (
               <MealSlotCard

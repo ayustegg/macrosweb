@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { toast } from "sonner";
@@ -16,10 +16,11 @@ import {
 } from "@/components/ui/select";
 import { addRecipeEntry } from "@/features/meals/actions";
 import type { RecipeWithItems } from "@/features/recipes/types";
-import type { MealSlot } from "@/app/api/meal-slots/route";
+import type { MealSlot } from "@/features/meals/types";
 
 interface Props {
   recipe: RecipeWithItems;
+  mealSlots: MealSlot[];
   date?: string;
 }
 
@@ -51,22 +52,11 @@ function calcMacros(recipe: RecipeWithItems, servings: number) {
   };
 }
 
-export function AddRecipeEntryClient({ recipe, date }: Props) {
+export function AddRecipeEntryClient({ recipe, mealSlots, date }: Props) {
   const router = useRouter();
-  const [slots, setSlots] = useState<MealSlot[]>([]);
-  const [slotId, setSlotId] = useState("");
+  const [slotId, setSlotId] = useState(() => mealSlots[0]?.id ?? "");
   const [quantity, setQuantity] = useState("1");
   const [submitting, setSubmitting] = useState(false);
-
-  useEffect(() => {
-    fetch("/api/meal-slots")
-      .then((r) => r.json())
-      .then((data: { slots: MealSlot[] }) => {
-        setSlots(data.slots);
-        if (data.slots.length > 0) setSlotId(data.slots[0]!.id);
-      })
-      .catch(() => {});
-  }, []);
 
   const qtyNum = Math.max(0, Number(quantity) || 0);
   const preview = useMemo(() => {
@@ -74,7 +64,7 @@ export function AddRecipeEntryClient({ recipe, date }: Props) {
     return calcMacros(recipe, qtyNum);
   }, [recipe, qtyNum]);
 
-  const slotName = slots.find((s) => s.id === slotId)?.name ?? "";
+  const slotName = mealSlots.find((s) => s.id === slotId)?.name ?? "";
 
   const backUrl = `/recipes/${recipe.id}`;
 
@@ -155,7 +145,7 @@ export function AddRecipeEntryClient({ recipe, date }: Props) {
               <SelectValue placeholder="Seleccionar..." />
             </SelectTrigger>
             <SelectContent>
-              {slots.map((s) => (
+              {mealSlots.map((s) => (
                 <SelectItem key={s.id} value={s.id}>
                   {s.name}
                 </SelectItem>

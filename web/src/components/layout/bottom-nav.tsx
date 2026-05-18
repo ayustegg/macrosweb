@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, Search, Utensils, User } from "lucide-react";
 import { useTabNavigation } from "@/components/layout/tab-navigation-provider";
+import { useTabPrefetch } from "@/hooks/use-tab-prefetch";
 
 const items = [
   { href: "/", label: "Hoy", Icon: Home },
@@ -16,6 +17,7 @@ const items = [
 export function BottomNav() {
   const pathname = usePathname();
   const { startNavigation } = useTabNavigation();
+  const prefetchTab = useTabPrefetch();
 
   return (
     <nav
@@ -36,6 +38,13 @@ export function BottomNav() {
             <Link
               key={href}
               href={href}
+              prefetch
+              onMouseEnter={() => {
+                if (!active) prefetchTab(href);
+              }}
+              onTouchStart={() => {
+                if (!active) prefetchTab(href);
+              }}
               onClick={() => {
                 if (!active) startNavigation(href);
               }}

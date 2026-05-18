@@ -5,10 +5,12 @@ import { BrandMark } from "@/components/features/brand/brand-mark";
 import { APP_NAME } from "@/lib/app-config";
 import { useMainScrollRotation } from "@/hooks/use-main-scroll-rotation";
 import { useTabNavigation } from "@/components/layout/tab-navigation-provider";
+import { useTabPrefetch } from "@/hooks/use-tab-prefetch";
 import { cn } from "@/lib/utils";
 
 export function AppHeader() {
   const { isNavigating, startNavigation } = useTabNavigation();
+  const prefetchTab = useTabPrefetch();
   const scrollRotation = useMainScrollRotation();
 
   return (
@@ -19,7 +21,9 @@ export function AppHeader() {
       <div className="px-page flex w-full items-center gap-2.5 py-2.5">
         <Link
           href="/"
+          prefetch
           className="focus-visible:ring-ring flex items-center gap-2.5 rounded-sm outline-none focus-visible:ring-2"
+          onMouseEnter={() => prefetchTab("/")}
           onClick={() => startNavigation("/")}
         >
           <span

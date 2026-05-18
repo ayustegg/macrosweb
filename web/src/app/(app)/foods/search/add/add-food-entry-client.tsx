@@ -1,0 +1,200 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { SubPage } from "@/components/layout/page-chrome";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { addEntry } from "@/features/meals/actions";
+import { computeEntrySnapshot } from "@/features/meals/domain";
+import type { Food } from "@/types/food";
+import type { MealSlot } from "@/features/meals/types";
+
+interface Props {
+  food: Food;
+  mealSlots: MealSlot[];
+  defaultSlotId?: string;
+  date?: string;
+}
+
+export function AddFoodEntryClient({
+  food,
+  mealSlots,
+  defaultSlotId = "",
+  date,
+}: Props) {
+  const router = useRouter();
+  const [quantity, setQuantity] = useState("100");
+  const [unit, setUnit] = useState<"g" | "ml" | "serving">("g");
+  const [slotId, setSlotId] = useState(
+    () => defaultSlotId || mealSlots[0]?.id || ""
+  );
+  const [submitting, setSubmitting] = useState(false);
+
+  const availableUnits = useMemo(() => {
+    const list: { value: "g" | "ml" | "serving"; label: string }[] = [
+      { value: "g", label: "gramos" },
+    ];
+    if (food.density_g_per_ml) list.push({ value: "ml", label: "mililitros" });
+    if (food.serving_size_g > 0)
+      list.push({ value: "serving", label: food.serving_name ?? "porciones" });
+    return list;
+  }, [food]);
+
+  const qtyNum = Number(quantity) || 0;
+
+  const preview = useMemo(() => {
+    if (qtyNum <= 0) return null;
+    try {
+      return computeEntrySnapshot(
+        {
+          kcal: food.kcal,
+          protein_g: food.protein_g,
+          carbs_g: food.carbs_g,
+          fat_g: food.fat_g,
+          nutrients: food.nutrients as Record<string, number>,
+          serving_size_g: food.serving_size_g,
+          density_g_per_ml: food.density_g_per_ml,
+        },
+        qtyNum,
+        unit
+      );
+    } catch {
+      return null;
+    }
+  }, [food, qtyNum, unit]);
+
+  const slotName = mealSlots.find((s) => s.id === slotId)?.name ?? "";
+  const backHref = date ? `/?date=${date}` : "/";
+
+  async function handleSubmit() {
+    if (qtyNum <= 0) {
+      toast.error("La cantidad debe ser mayor a 0");
+      return;
+    }
+    if (!slotId) {
+      toast.error("Selecciona un momento del día");
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const formData = new FormData();
+      formData.set("date", date ?? new Date().toISOString().slice(0, 10));
+      formData.set("meal_slot_id", slotId);
+      formData.set("source_type", "food");
+      formData.set("source_id", food.id);
+      formData.set("quantity", String(qtyNum));
+      formData.set("unit", unit);
+
+      const result = await addEntry(formData);
+      if (!result.ok) {
+        toast.error(result.error);
+        return;
+      }
+
+      toast.success(`Añadido a ${slotName}`);
+      router.push(backHref);
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <SubPage
+      title={food.name}
+      backHref={backHref}
+      subtitle={food.brand ?? undefined}
+    >
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="add-quantity">Cantidad</Label>
+          <Input
+            id="add-quantity"
+            type="number"
+            inputMode="decimal"
+            step="any"
+            min="0"
+            value={quantity}
+            onChange={(e) => setQuantity(e.target.value)}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="add-unit">Unidad</Label>
+          <Select
+            value={unit}
+            onValueChange={(v) => setUnit(v as "g" | "ml" | "serving")}
+          >
+            <SelectTrigger id="add-unit" className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {availableUnits.map((u) => (
+                <SelectItem key={u.value} value={u.value}>
+                  {u.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="add-slot">Momento del día</Label>
+          <Select value={slotId} onValueChange={setSlotId}>
+            <SelectTrigger id="add-slot" className="w-full">
+              <SelectValue placeholder="Seleccionar..." />
+            </SelectTrigger>
+            <SelectContent>
+              {mealSlots.map((s) => (
+                <SelectItem key={s.id} value={s.id}>
+                  {s.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {preview && (
+          <div className="bg-muted/30 border-border rounded-[14px] border p-3">
+            <p className="text-muted-foreground mb-1.5 text-xs font-medium uppercase">
+              {qtyNum}{" "}
+              {availableUnits.find((u) => u.value === unit)?.label ?? unit}
+            </p>
+            <div className="flex gap-4 text-sm">
+              <span className="font-medium">{preview.kcal} kcal</span>
+              <span className="text-muted-foreground">
+                P {preview.protein_g}g
+              </span>
+              <span className="text-muted-foreground">
+                C {preview.carbs_g}g
+              </span>
+              <span className="text-muted-foreground">G {preview.fat_g}g</span>
+            </div>
+          </div>
+        )}
+
+        <Button
+          className="w-full"
+          disabled={submitting || qtyNum <= 0 || !slotId}
+          onClick={handleSubmit}
+        >
+          {submitting
+            ? "Añadiendo..."
+            : slotName
+              ? `Añadir a ${slotName}`
+              : "Añadir"}
+        </Button>
+      </div>
+    </SubPage>
+  );
+}
