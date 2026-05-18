@@ -1,12 +1,22 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { DayNavigator } from "@/features/meals/components/day-navigator";
 import { MealSlotCard } from "@/features/meals/components/meal-slot-card";
+import { DailyMacroSummary } from "@/components/features/macros/daily-macro-summary";
 import type { DayLogWithEntries } from "@/features/meals/queries";
 import type { MealSlot } from "@/features/meals/types";
 
+interface Goal {
+  kcal: number;
+  protein_g: number;
+  carbs_g: number;
+  fat_g: number;
+}
+
 interface Props {
   dayLog: DayLogWithEntries | null;
+  goal: Goal | null;
   date: string;
 }
 
@@ -14,7 +24,7 @@ interface FetchResponse {
   slots: MealSlot[];
 }
 
-export function TodayPageClient({ dayLog }: Props) {
+export function TodayPageClient({ dayLog, goal, date }: Props) {
   const [slots, setSlots] = useState<MealSlot[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -34,69 +44,33 @@ export function TodayPageClient({ dayLog }: Props) {
     load();
   }, []);
 
-  const dailyTotals = dayLog
-    ? Object.values(dayLog.slots).reduce(
-        (acc, s) => ({
-          kcal: acc.kcal + s.totals.kcal,
-          protein_grams: acc.protein_grams + s.totals.protein_g,
-          carbs_grams: acc.carbs_grams + s.totals.carbs_g,
-          fat_grams: acc.fat_grams + s.totals.fat_g,
-        }),
-        { kcal: 0, protein_grams: 0, carbs_grams: 0, fat_grams: 0 }
-      )
-    : null;
+  const summary = {
+    kcal: dayLog?.total_kcal ?? 0,
+    protein_g: dayLog?.total_protein_g ?? 0,
+    carbs_g: dayLog?.total_carbs_g ?? 0,
+    fat_g: dayLog?.total_fat_g ?? 0,
+  };
 
   const hasEntries = dayLog && Object.keys(dayLog.slots).length > 0;
 
-  if (!hasEntries) {
-    return (
-      <div className="mx-auto flex max-w-md flex-col items-center justify-center px-4 py-20 text-center">
-        <div className="bg-muted mb-4 rounded-full p-4">
-          <span className="text-2xl">🍽️</span>
-        </div>
-        <h2 className="mb-1 text-lg font-semibold">Sin registros hoy</h2>
-        <p className="text-muted-foreground mb-6 text-sm">
-          Añade tu primera comida del día para empezar.
-        </p>
-      </div>
-    );
-  }
-
   return (
-    <div className="mx-auto max-w-md space-y-6 px-4 pt-4 pb-24">
-      {/* Daily totals bar */}
-      <div className="bg-card rounded-xl border px-4 py-3 shadow-sm">
-        <div className="mb-1 flex items-baseline justify-between">
-          <span className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
-            Total
-          </span>
-          <span className="text-xl font-bold tabular-nums">
-            {Math.round(dailyTotals!.kcal)}
-          </span>
-        </div>
-        <div className="text-muted-foreground flex gap-4 text-xs">
-          <span className="tabular-nums">
-            P {Math.round(dailyTotals!.protein_grams)}g
-          </span>
-          <span className="tabular-nums">
-            C {Math.round(dailyTotals!.carbs_grams)}g
-          </span>
-          <span className="tabular-nums">
-            G {Math.round(dailyTotals!.fat_grams)}g
-          </span>
-        </div>
-      </div>
+    <div className="mx-auto max-w-md space-y-4 px-4 pt-4 pb-24">
+      {/* Day navigator */}
+      <DayNavigator date={date} />
 
-      {/* Slot cards */}
+      {/* Macro summary */}
+      <DailyMacroSummary summary={summary} goal={goal} />
+
+      {/* Slot cards or empty state */}
       {loading ? (
         <div className="space-y-3">
           {[1, 2, 3].map((i) => (
             <div key={i} className="bg-muted h-32 animate-pulse rounded-xl" />
           ))}
         </div>
-      ) : (
+      ) : hasEntries ? (
         <div className="space-y-3">
-          {slots.map((slot: MealSlot) => {
+          {slots.map((slot) => {
             const slotData = dayLog?.slots[slot.id];
             return (
               <MealSlotCard
@@ -112,6 +86,16 @@ export function TodayPageClient({ dayLog }: Props) {
               />
             );
           })}
+        </div>
+      ) : (
+        <div className="flex flex-col items-center justify-center px-4 py-16 text-center">
+          <div className="bg-muted mb-4 rounded-full p-4">
+            <span className="text-2xl">🍽️</span>
+          </div>
+          <h2 className="mb-1 text-lg font-semibold">Sin registros</h2>
+          <p className="text-muted-foreground mb-6 text-sm">
+            Añade tu primera comida del día para empezar.
+          </p>
         </div>
       )}
     </div>
