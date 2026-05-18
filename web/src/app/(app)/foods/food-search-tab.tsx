@@ -43,7 +43,7 @@ export function FoodSearchPageTab() {
         />
       </div>
 
-      <div className="fixed right-4 bottom-20 z-40">
+      <div className="bottom-fab fixed right-4 z-40">
         <Button
           size="icon-lg"
           className="h-12 w-12 rounded-full shadow-lg"

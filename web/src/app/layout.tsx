@@ -47,8 +47,12 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
+  minimumScale: 1,
+  maximumScale: 1,
+  userScalable: false,
   viewportFit: "cover",
   themeColor: "#f7f6f4",
+  interactiveWidget: "overlays-content",
 };
 
 export default function RootLayout({
@@ -69,7 +73,7 @@ export default function RootLayout({
         playfairDisplayHeading.variable
       )}
     >
-      <body className="h-[100dvh] w-full">
+      <body className="h-full w-full overflow-hidden">
         {children}
         <Toaster />
       </body>

@@ -163,9 +163,6 @@ export function TodayPageClient({
       )}
 
       <div className="px-page space-y-3.5 pt-2">
-        <h1 className="text-[28px] leading-tight font-bold tracking-tight">
-          Hoy
-        </h1>
         <DayNavigator date={date} timezone={timezone} />
         <DailyMacroSummary summary={summary} goal={goal} />
         <div className="flex items-baseline justify-between px-1 pt-1">

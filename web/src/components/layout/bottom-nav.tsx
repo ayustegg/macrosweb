@@ -11,13 +11,13 @@ const items = [
   { href: "/profile", label: "Perfil", Icon: User },
 ] as const;
 
-/** Fixed to the physical bottom; safe-area padding keeps icons above the home indicator. */
+/** Bottom nav como footer del app shell (flujo del grid, no position:fixed). */
 export function BottomNav() {
   const pathname = usePathname();
 
   return (
     <nav
-      className="border-border/80 bg-background/95 pb-safe fixed inset-x-0 bottom-0 z-50 w-full border-t backdrop-blur-xl backdrop-saturate-150"
+      className="border-border/80 bg-background/95 pb-safe w-full border-t backdrop-blur-xl backdrop-saturate-150"
       aria-label="Navegación principal"
     >
       <div
