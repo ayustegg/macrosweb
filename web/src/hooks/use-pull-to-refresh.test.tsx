@@ -16,7 +16,7 @@ function PtrHarness({
   threshold?: number;
 }) {
   const { containerRef, pullDistance, refreshing, canRelease } =
-    usePullToRefresh(onRefresh, { threshold });
+    usePullToRefresh(onRefresh, { threshold, minRefreshDuration: 0 });
   return (
     <main className="app-shell-main" style={{ overflow: "auto", height: 400 }}>
       <div ref={containerRef} data-testid="ptr-root">

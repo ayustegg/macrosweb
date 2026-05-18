@@ -11,11 +11,20 @@ import {
 const DEFAULT_THRESHOLD = 64;
 const DEFAULT_MAX_PULL = 96;
 const DEFAULT_SCROLL_SELECTOR = ".app-shell-main";
+const DEFAULT_MIN_REFRESH_MS = 600;
 
 interface UsePullToRefreshOptions {
   threshold?: number;
   maxPull?: number;
   scrollSelector?: string;
+  /** Minimum time the spinner stays visible after release. */
+  minRefreshDuration?: number;
+}
+
+function wait(ms: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
 }
 
 export interface UsePullToRefreshReturn {
@@ -34,6 +43,8 @@ export function usePullToRefresh(
   const threshold = options.threshold ?? DEFAULT_THRESHOLD;
   const maxPull = options.maxPull ?? DEFAULT_MAX_PULL;
   const scrollSelector = options.scrollSelector ?? DEFAULT_SCROLL_SELECTOR;
+  const minRefreshDuration =
+    options.minRefreshDuration ?? DEFAULT_MIN_REFRESH_MS;
 
   const containerRef = useRef<HTMLDivElement>(null);
   const startYRef = useRef<number | null>(null);
@@ -108,7 +119,10 @@ export function usePullToRefresh(
       setRefreshing(true);
       setPull(threshold);
       try {
-        await Promise.resolve(onRefreshRef.current());
+        await Promise.all([
+          Promise.resolve(onRefreshRef.current()),
+          wait(minRefreshDuration),
+        ]);
       } finally {
         setRefreshing(false);
         setPull(0);
@@ -126,7 +140,7 @@ export function usePullToRefresh(
       el.removeEventListener("touchend", onTouchEnd);
       el.removeEventListener("touchcancel", onTouchEnd);
     };
-  }, [isAtScrollTop, maxPull, setPull, threshold]);
+  }, [isAtScrollTop, maxPull, minRefreshDuration, setPull, threshold]);
 
   const activeDistance = refreshing ? threshold : pullDistance;
   const progress = Math.min(1, activeDistance / threshold);
