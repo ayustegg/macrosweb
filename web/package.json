@@ -14,9 +14,9 @@
     "prepare": "husky"
   },
   "dependencies": {
-    "next": "16.2.6",
-    "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "next": "15.5.18",
+    "react": "19",
+    "react-dom": "19"
   },
   "devDependencies": {
     "@serwist/next": "^9.5.11",
