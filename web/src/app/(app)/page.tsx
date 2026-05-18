@@ -38,7 +38,6 @@ export default async function TodayPage({ searchParams }: Props) {
 
   return (
     <TodayPageClient
-      key={date}
       dayLog={dayLog}
       goal={goal}
       mealSlots={mealSlots}

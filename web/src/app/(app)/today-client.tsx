@@ -12,9 +12,6 @@ import {
   DATE_NAV_MIN_MS,
   useHeaderBrandMotion,
 } from "@/components/layout/header-brand-motion-provider";
-import { TodayDayLoading } from "@/components/features/meals/today-day-loading";
-import { ContentCrossfade } from "@/components/ui/content-crossfade";
-import { CONTENT_FADE_IN } from "@/lib/content-fade";
 import { cn } from "@/lib/utils";
 import type { DayLogWithEntries, SlotTotals } from "@/features/meals/queries";
 import type { MealSlot } from "@/features/meals/types";
@@ -77,21 +74,20 @@ export function TodayPageClient({
 }: Props) {
   const router = useRouter();
   const {
-    isTodayLoading,
     isHomeRefreshing,
     homeRefreshStartedRef,
     completeHomeRefresh,
-    pullProgress,
-    pullIsDragging,
     pullRefreshing,
+    ringPreviewProgress,
   } = useHeaderBrandMotion();
-  const [dayLogData, setDayLogData] = useState(() => dayLog);
+  const [optimistic, setOptimistic] = useState<{
+    base: DayLogWithEntries | null;
+    value: DayLogWithEntries | null;
+  } | null>(null);
   const snapshotRef = useRef<DayLogWithEntries | null>(null);
 
-  useEffect(() => {
-    const frame = requestAnimationFrame(() => setDayLogData(dayLog));
-    return () => cancelAnimationFrame(frame);
-  }, [dayLog]);
+  const dayLogData =
+    optimistic && optimistic.base === dayLog ? optimistic.value : dayLog;
 
   useEffect(() => {
     if (!isHomeRefreshing) return;
@@ -118,45 +114,40 @@ export function TodayPageClient({
   // --- Optimistic callbacks with rollback ---
 
   const rollback = useCallback(() => {
-    if (snapshotRef.current) {
-      setDayLogData(snapshotRef.current);
-      snapshotRef.current = null;
-    }
+    snapshotRef.current = null;
+    setOptimistic(null);
   }, []);
-
-  const saveSnapshot = useCallback(() => {
-    snapshotRef.current = dayLogData;
-  }, [dayLogData]);
 
   const handleDeleteEntry = useCallback(
     (entryId: string) => {
-      saveSnapshot();
-      setDayLogData((prev) => {
-        if (!prev) return prev;
-        const newSlots = { ...prev.slots };
-        for (const [slotId, slotData] of Object.entries(newSlots)) {
-          const idx = slotData.entries.findIndex((e) => e.id === entryId);
-          if (idx !== -1) {
-            const newEntries = slotData.entries.filter((e) => e.id !== entryId);
-            if (newEntries.length === 0) {
-              delete newSlots[slotId];
-            } else {
-              newSlots[slotId] = {
-                entries: newEntries,
-                totals: recalcSlotTotals(newEntries),
-              };
-            }
-            break;
+      snapshotRef.current = dayLogData;
+      if (!dayLogData) return;
+      const newSlots = { ...dayLogData.slots };
+      for (const [slotId, slotData] of Object.entries(newSlots)) {
+        const idx = slotData.entries.findIndex((e) => e.id === entryId);
+        if (idx !== -1) {
+          const newEntries = slotData.entries.filter((e) => e.id !== entryId);
+          if (newEntries.length === 0) {
+            delete newSlots[slotId];
+          } else {
+            newSlots[slotId] = {
+              entries: newEntries,
+              totals: recalcSlotTotals(newEntries),
+            };
           }
+          break;
         }
-        return {
-          ...prev,
+      }
+      setOptimistic({
+        base: dayLog,
+        value: {
+          ...dayLogData,
           slots: newSlots,
           ...recalcDailyTotals(newSlots),
-        };
+        },
       });
     },
-    [saveSnapshot]
+    [dayLog, dayLogData]
   );
 
   const summary = {
@@ -167,80 +158,58 @@ export function TodayPageClient({
   };
 
   const hasMealSlots = mealSlots.length > 0;
-
-  const ringPullPreview =
-    !isTodayLoading && (pullIsDragging || pullRefreshing)
-      ? pullRefreshing
-        ? 1
-        : pullProgress
-      : undefined;
+  const isRefreshing = isHomeRefreshing || pullRefreshing;
 
   return (
     <PullToRefresh onRefresh={() => router.refresh()}>
       <div className="px-page flex flex-col gap-3.5 pt-2 pb-4">
         <DayNavigator date={date} timezone={timezone} />
 
-        <ContentCrossfade
-          showB={!isTodayLoading}
-          a={
-            <TodayDayLoading
-              key={`${date}-${isHomeRefreshing ? "refresh" : "nav"}`}
-              summary={summary}
-              goal={goal}
-              animationKey={`${date}-${isHomeRefreshing ? "refresh" : "nav"}`}
-              mealSlots={mealSlots}
-            />
-          }
-          b={
-            <div className={cn("flex flex-col gap-3.5", CONTENT_FADE_IN)}>
-              <DailyMacroSummary
-                summary={summary}
-                goal={goal}
-                pullPreviewProgress={ringPullPreview}
-              />
-              {hasMealSlots ? (
-                <>
-                  <MealsSectionHeader />
-                  <div className="flex flex-col gap-3.5">
-                    {mealSlots.map((slot, index) => {
-                      const slotData = dayLogData?.slots[slot.id];
-                      return (
-                        <div
-                          key={slot.id}
-                          className={CONTENT_FADE_IN}
-                          style={{
-                            animationDelay: `${Math.min(index * 40, 160)}ms`,
-                          }}
-                        >
-                          <MealSlotCard
-                            slotId={slot.id}
-                            slotName={slot.name}
-                            slotData={
-                              slotData ?? {
-                                entries: [],
-                                totals: {
-                                  kcal: 0,
-                                  protein_g: 0,
-                                  carbs_g: 0,
-                                  fat_g: 0,
-                                },
-                              }
-                            }
-                            date={date}
-                            onDeleteEntry={handleDeleteEntry}
-                            onRollback={rollback}
-                          />
-                        </div>
-                      );
-                    })}
-                  </div>
-                </>
-              ) : (
-                <FirstTimeWelcome />
-              )}
-            </div>
-          }
-        />
+        <div className="flex flex-col gap-3.5">
+          <DailyMacroSummary
+            summary={summary}
+            goal={goal}
+            pullPreviewProgress={ringPreviewProgress}
+          />
+          {hasMealSlots ? (
+            <>
+              <MealsSectionHeader />
+              <div
+                className={cn(
+                  "flex flex-col gap-3.5 transition-opacity duration-200",
+                  isRefreshing && "opacity-70"
+                )}
+              >
+                {mealSlots.map((slot) => {
+                  const slotData = dayLogData?.slots[slot.id];
+                  return (
+                    <MealSlotCard
+                      key={slot.id}
+                      slotId={slot.id}
+                      slotName={slot.name}
+                      slotData={
+                        slotData ?? {
+                          entries: [],
+                          totals: {
+                            kcal: 0,
+                            protein_g: 0,
+                            carbs_g: 0,
+                            fat_g: 0,
+                          },
+                        }
+                      }
+                      date={date}
+                      onDeleteEntry={handleDeleteEntry}
+                      onRollback={rollback}
+                    />
+                  );
+                })}
+              </div>
+            </>
+          ) : (
+            <FirstTimeWelcome />
+          )}
+        </div>
       </div>
     </PullToRefresh>
   );

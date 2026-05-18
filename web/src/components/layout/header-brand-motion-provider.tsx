@@ -24,6 +24,13 @@ const DATE_NAV_MAX_MS = 8000;
 export const SETTLE_ROTATION_MS = 2800;
 export const SETTLE_ROTATION_EASING = "cubic-bezier(0.12, 1, 0.28, 1)";
 
+/** Scripted ring preview timings — drain rings to 0, hold, then refill. */
+const RING_DRAIN_MS = 280;
+const RING_HOLD_MS = 80;
+const RING_REFILL_MS = 720;
+const RING_DRAIN_EASING = (t: number) => 1 - Math.pow(1 - t, 3);
+const RING_REFILL_EASING = (t: number) => 1 - Math.pow(1 - t, 3);
+
 function prefersReducedMotion(): boolean {
   if (typeof window === "undefined") return false;
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -50,6 +57,14 @@ interface HeaderBrandMotionContextValue {
   pullRefreshing: boolean;
   /** Bumps when pull-to-refresh finishes — replay macro ring fill. */
   pullRefreshGeneration: number;
+  /**
+   * Unified 0–1 ring preview progress for all refresh sources.
+   * - `undefined` when idle (rings show real value).
+   * - During pull drag: matches `pullProgress`.
+   * - During pull refresh: stays at 1 until replay.
+   * - During home refresh / date nav: scripted drain (1→0) → hold → refill (0→1).
+   */
+  ringPreviewProgress: number | undefined;
   setPullState: (state: PullBrandState) => void;
   startDateNavigation: (targetDate: string) => void;
   startHomeRefresh: () => void;
@@ -114,6 +129,9 @@ export function HeaderBrandMotionProvider({
   const [pullRefreshGeneration, setPullRefreshGeneration] = useState(0);
   const [settleHold, setSettleHold] = useState<number | null>(null);
   const [isSettling, setIsSettling] = useState(false);
+  const [scriptedRingPreview, setScriptedRingPreview] = useState<number | null>(
+    null
+  );
 
   const spinOriginRef = useRef(0);
   const spinAngleRef = useRef(0);
@@ -214,6 +232,47 @@ export function HeaderBrandMotionProvider({
     return () => window.clearTimeout(failSafe);
   }, [completeHomeRefresh, homeRefreshing]);
 
+  // Scripted ring drain→hold→refill while the user clicks the brand to refresh.
+  // Date navigation lets rings interpolate naturally from old → new value.
+  // Pull drag/refresh drives previewProgress directly, so we skip when pulling.
+  const scriptedActive =
+    homeRefreshing && !pull.isDragging && !pull.refreshing && !reducedMotion;
+
+  useEffect(() => {
+    if (!scriptedActive) return;
+
+    let frame = 0;
+    let cancelled = false;
+    const start = performance.now();
+    const drainEnd = start + RING_DRAIN_MS;
+    const holdEnd = drainEnd + RING_HOLD_MS;
+
+    const tick = (now: number) => {
+      if (cancelled) return;
+      if (now < drainEnd) {
+        const t = (now - start) / RING_DRAIN_MS;
+        setScriptedRingPreview(1 - RING_DRAIN_EASING(t));
+      } else if (now < holdEnd) {
+        setScriptedRingPreview(0);
+      } else {
+        const t = Math.min(1, (now - holdEnd) / RING_REFILL_MS);
+        setScriptedRingPreview(RING_REFILL_EASING(t));
+        if (t >= 1) {
+          setScriptedRingPreview(null);
+          return;
+        }
+      }
+      frame = requestAnimationFrame(tick);
+    };
+
+    frame = requestAnimationFrame(tick);
+    return () => {
+      cancelled = true;
+      cancelAnimationFrame(frame);
+      setScriptedRingPreview(null);
+    };
+  }, [scriptedActive]);
+
   useEffect(() => {
     if (!(wasPullRefreshingRef.current && !pull.refreshing)) {
       wasPullRefreshingRef.current = pull.refreshing;
@@ -245,6 +304,15 @@ export function HeaderBrandMotionProvider({
     [reducedMotion]
   );
 
+  const ringPreviewProgress: number | undefined =
+    scriptedRingPreview !== null
+      ? scriptedRingPreview
+      : pull.refreshing
+        ? 1
+        : pull.isDragging
+          ? pull.progress
+          : undefined;
+
   const value: HeaderBrandMotionContextValue = {
     rotation,
     transition,
@@ -258,6 +326,7 @@ export function HeaderBrandMotionProvider({
     pullIsDragging: pull.isDragging,
     pullRefreshing: pull.refreshing,
     pullRefreshGeneration,
+    ringPreviewProgress,
     setPullState: setPull,
     startDateNavigation,
     startHomeRefresh,

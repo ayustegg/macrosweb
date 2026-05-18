@@ -42,7 +42,7 @@ export function PullToRefresh({
     >
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 z-10 flex justify-center overflow-hidden"
+        className="px-page pointer-events-none absolute inset-x-0 top-0 z-10 flex justify-center overflow-hidden"
         style={{
           height: showPullHint ? Math.min(pullDistance * 0.55, 40) : 0,
           opacity: showPullHint ? Math.min(1, progress * 1.15) : 0,
@@ -54,7 +54,7 @@ export function PullToRefresh({
         <div
           className="mt-1.5 h-[3px] rounded-full"
           style={{
-            width: 28 + progress * 56,
+            width: `${Math.min(100, 12 + progress * 95)}%`,
             background: canRelease
               ? "var(--macro-kcal)"
               : "color-mix(in oklch, var(--macro-kcal) 55%, var(--muted-foreground))",

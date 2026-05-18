@@ -131,7 +131,9 @@ export function MultiMacroRing({
           displayRatio = fillRatio * previewProgress;
         }
 
-        const targetOffset = C * (1 - displayRatio);
+        const minVisible = 0.001;
+        const visibleRatio = Math.max(displayRatio, minVisible);
+        const targetOffset = C * (1 - visibleRatio);
         const delay = shouldAnimate ? i * staggerMs : 0;
         const over = pct > 1 && !isPreview && (!shouldAnimate || filled);
         const overDelay = delay + fillMs;
@@ -161,7 +163,7 @@ export function MultiMacroRing({
                   ? `stroke-dashoffset ${fillMs}ms ${RING_FILL_EASING} ${delay}ms`
                   : isPreview
                     ? "stroke-dashoffset 0.14s ease-out"
-                    : undefined,
+                    : "stroke-dashoffset 1100ms cubic-bezier(0.4, 0, 0.2, 1)",
               }}
             />
             {over && (

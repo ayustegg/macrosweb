@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ChevronDown } from "lucide-react";
 import { MultiMacroRing } from "@/components/features/macros/multi-macro-ring";
@@ -34,6 +34,43 @@ interface Props {
 }
 
 const EXPANDED_RING = 200;
+const COUNTUP_MS = 3000;
+const EXPANDED_RING_FILL_MS = COUNTUP_MS;
+const EXPANDED_RING_STAGGER_MS = 0;
+
+function useCountUpOnChange(target: number, durationMs: number) {
+  const [value, setValue] = useState(target);
+  const frameRef = useRef<number | null>(null);
+  const fromRef = useRef(target);
+  const firstRef = useRef(true);
+
+  useEffect(() => {
+    if (firstRef.current) {
+      firstRef.current = false;
+      fromRef.current = target;
+      setValue(target);
+      return;
+    }
+    if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
+    const start = performance.now();
+    const from = fromRef.current;
+    const ease = (t: number) => 1 - Math.pow(1 - t, 10);
+    const tick = (now: number) => {
+      const t = Math.min(1, (now - start) / durationMs);
+      const v = from + (target - from) * ease(t);
+      setValue(v);
+      fromRef.current = v;
+      if (t < 1) frameRef.current = requestAnimationFrame(tick);
+      else fromRef.current = target;
+    };
+    frameRef.current = requestAnimationFrame(tick);
+    return () => {
+      if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
+    };
+  }, [target, durationMs]);
+
+  return value;
+}
 
 const COMPACT_MACROS = [
   {
@@ -64,20 +101,30 @@ const COMPACT_MACROS = [
 
 const LEGENDS = [
   {
+    key: "kcal" as const,
+    label: "Calorías",
+    unit: "kcal",
+    color: "var(--macro-kcal)",
+    track: "var(--macro-kcal-tint)",
+  },
+  {
     key: "protein_g" as const,
     label: "Proteína",
+    unit: "g",
     color: "var(--macro-pro)",
     track: "var(--macro-pro-tint)",
   },
   {
     key: "carbs_g" as const,
     label: "Carbohidratos",
+    unit: "g",
     color: "var(--macro-car)",
     track: "var(--macro-car-tint)",
   },
   {
     key: "fat_g" as const,
     label: "Grasa",
+    unit: "g",
     color: "var(--macro-fat)",
     track: "var(--macro-fat-tint)",
   },
@@ -89,6 +136,22 @@ export function DailyMacroSummary({
   pullPreviewProgress,
 }: Props) {
   const [expanded, setExpanded] = useState(false);
+
+  const animatedKcal = useCountUpOnChange(summary.kcal, COUNTUP_MS);
+  const animatedRemaining = useCountUpOnChange(
+    Math.max(0, (goal?.kcal ?? 0) - summary.kcal),
+    COUNTUP_MS
+  );
+  const animatedProtein = useCountUpOnChange(summary.protein_g, COUNTUP_MS);
+  const animatedCarbs = useCountUpOnChange(summary.carbs_g, COUNTUP_MS);
+  const animatedFat = useCountUpOnChange(summary.fat_g, COUNTUP_MS);
+  const animatedValues: Record<(typeof COMPACT_MACROS)[number]["key"], number> =
+    {
+      kcal: animatedKcal,
+      protein_g: animatedProtein,
+      carbs_g: animatedCarbs,
+      fat_g: animatedFat,
+    };
 
   if (!goal) {
     return (
@@ -105,9 +168,8 @@ export function DailyMacroSummary({
     );
   }
 
-  const remaining = Math.max(0, goal.kcal - summary.kcal);
   const fmt = (n: number) => Math.round(n).toLocaleString("es-ES");
-  const kcalPct = Math.min(100, Math.round((summary.kcal / goal.kcal) * 100));
+  const kcalPct = Math.min(100, (animatedKcal / goal.kcal) * 100);
   const isPullPreview = pullPreviewProgress !== undefined;
   const displayKcalPct = isPullPreview
     ? kcalPct * pullPreviewProgress
@@ -141,8 +203,8 @@ export function DailyMacroSummary({
 
         <div className="min-w-0 flex-1">
           <div className="flex items-baseline gap-1">
-            <span className="num text-foreground text-[22px] leading-none font-bold tracking-tight">
-              {fmt(summary.kcal)}
+            <span className="num text-foreground text-[22px] leading-none font-bold tracking-tight tabular-nums">
+              {fmt(animatedKcal)}
             </span>
             <span className="text-muted-foreground num pb-0.5 text-xs font-medium">
               / {fmt(goal.kcal)} kcal
@@ -150,13 +212,13 @@ export function DailyMacroSummary({
           </div>
           <p className="text-muted-foreground mt-1 flex flex-wrap items-baseline gap-x-1.5 text-xs">
             <span>
-              <span className="num text-foreground font-semibold">
-                {fmt(remaining)}
+              <span className="num text-foreground font-semibold tabular-nums">
+                {fmt(animatedRemaining)}
               </span>{" "}
               kcal restantes
             </span>
-            <span className="text-muted-foreground/80 num text-[11px] font-medium">
-              · {kcalPct}% del objetivo
+            <span className="text-muted-foreground/80 num text-[11px] font-medium tabular-nums">
+              · {Math.round((animatedKcal / goal.kcal) * 100)}% del objetivo
             </span>
           </p>
           <div
@@ -168,9 +230,7 @@ export function DailyMacroSummary({
               style={{
                 width: `${displayKcalPct}%`,
                 background: "var(--macro-kcal)",
-                transition: isPullPreview
-                  ? "width 0.14s ease-out"
-                  : "width 0.5s ease-out",
+                transition: isPullPreview ? "width 0.14s ease-out" : undefined,
               }}
             />
           </div>
@@ -179,7 +239,7 @@ export function DailyMacroSummary({
               <MacroChip
                 key={key}
                 short={short}
-                value={summary[key]}
+                value={animatedValues[key]}
                 color={color}
                 isKcal={key === "kcal"}
               />
@@ -189,7 +249,7 @@ export function DailyMacroSummary({
 
         <ChevronDown
           className={cn(
-            "text-muted-foreground size-5 shrink-0 transition-transform duration-350 ease-[cubic-bezier(0.32,0.72,0,1)]",
+            "text-muted-foreground size-5 shrink-0 transition-transform duration-700 ease-[cubic-bezier(0.32,0.72,0,1)]",
             expanded && "rotate-180"
           )}
           aria-hidden
@@ -204,39 +264,56 @@ export function DailyMacroSummary({
       >
         <div className={cn(COLLAPSE_INNER, collapseInnerClass(expanded))}>
           <div className="border-border border-t px-[18px] pt-4 pb-4">
-            <div
-              className="relative mx-auto flex justify-center"
-              style={{ width: EXPANDED_RING, height: EXPANDED_RING }}
-            >
-              <MultiMacroRing
-                totals={summary}
-                target={goal}
-                size={EXPANDED_RING}
-              />
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-muted-foreground mb-1 text-[9.5px] font-medium tracking-widest uppercase">
-                  Calorías
-                </span>
-                <span className="num text-foreground text-[34px] leading-none font-bold tracking-tight">
-                  {fmt(summary.kcal)}
-                </span>
+            <div className="flex items-center gap-5">
+              <div
+                className="shrink-0"
+                style={{ width: EXPANDED_RING, height: EXPANDED_RING }}
+              >
+                <MultiMacroRing
+                  key={expanded ? "expanded-open" : "expanded-closed"}
+                  totals={summary}
+                  target={goal}
+                  size={EXPANDED_RING}
+                  animateIn={expanded}
+                  fillMs={EXPANDED_RING_FILL_MS}
+                  staggerMs={EXPANDED_RING_STAGGER_MS}
+                  previewProgress={pullPreviewProgress}
+                />
+              </div>
+              <div className="flex min-w-0 flex-1 flex-col gap-3">
+                <div>
+                  <p className="text-muted-foreground text-[10px] font-semibold tracking-[0.14em] uppercase">
+                    Consumidas
+                  </p>
+                  <p className="num text-foreground mt-0.5 text-[22px] leading-none font-bold tracking-tight tabular-nums">
+                    {fmt(animatedKcal)}
+                    <span className="text-muted-foreground ml-1 text-[11px] font-medium">
+                      kcal
+                    </span>
+                  </p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground text-[10px] font-semibold tracking-[0.14em] uppercase">
+                    Restantes
+                  </p>
+                  <p className="num text-foreground mt-0.5 text-[22px] leading-none font-bold tracking-tight tabular-nums">
+                    {fmt(animatedRemaining)}
+                    <span className="text-muted-foreground ml-1 text-[11px] font-medium">
+                      kcal
+                    </span>
+                  </p>
+                </div>
               </div>
             </div>
 
-            <div className="text-muted-foreground mt-3 flex justify-center gap-1.5 text-xs">
-              <span>Restante</span>
-              <span className="num text-foreground font-semibold">
-                {fmt(remaining)} kcal
-              </span>
-            </div>
-
             <div className="border-border/80 mt-4 grid gap-3 border-t pt-4">
-              {LEGENDS.map(({ key, label, color, track }) => (
+              {LEGENDS.map(({ key, label, unit, color, track }) => (
                 <MacroLegend
                   key={key}
                   label={label}
                   value={summary[key]}
                   target={goal[key]}
+                  unit={unit}
                   color={color}
                   track={track}
                 />
@@ -274,7 +351,7 @@ function MacroChip({
           {short}
         </span>
       </span>
-      <span className="num text-foreground text-[11px] leading-none font-bold">
+      <span className="num text-foreground text-[11px] leading-none font-bold tabular-nums">
         {isKcal ? Math.round(value).toLocaleString("es-ES") : Math.round(value)}
         {unit}
       </span>
@@ -286,16 +363,20 @@ function MacroLegend({
   label,
   value,
   target,
+  unit,
   color,
   track,
 }: {
   label: string;
   value: number;
   target: number;
+  unit: string;
   color: string;
   track: string;
 }) {
-  const pct = Math.max(0, Math.min(1, value / (target || 1)));
+  const animated = useCountUpOnChange(value, COUNTUP_MS);
+  const pct = Math.max(0, Math.min(1, animated / (target || 1)));
+  const fmtNum = (n: number) => Math.round(n).toLocaleString("es-ES");
   return (
     <div>
       <div className="mb-1.5 flex items-baseline justify-between">
@@ -307,11 +388,11 @@ function MacroLegend({
           {label}
         </span>
         <span className="num text-muted-foreground text-xs">
-          <span className="text-foreground font-semibold">
-            {Math.round(value)}
+          <span className="text-foreground font-semibold tabular-nums">
+            {fmtNum(animated)}
           </span>
           <span className="mx-1">/</span>
-          {target} g
+          {fmtNum(target)} {unit}
         </span>
       </div>
       <div
@@ -319,7 +400,7 @@ function MacroLegend({
         style={{ background: track }}
       >
         <div
-          className="h-full rounded-full transition-[width] duration-500 ease-out"
+          className="h-full rounded-full"
           style={{ width: `${pct * 100}%`, background: color }}
         />
       </div>
