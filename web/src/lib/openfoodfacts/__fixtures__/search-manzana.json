@@ -1,0 +1,92 @@
+{
+  "count": 1000,
+  "page": 1,
+  "page_count": 20,
+  "page_size": 20,
+  "products": [
+    {
+      "code": "3256221337583",
+      "product_name": "Pomme",
+      "brands": "Pink Lady",
+      "image_url": "https://images.openfoodfacts.org/images/products/325/622/133/7583/1.jpg",
+      "nutriments": {
+        "energy-kcal_100g": 52,
+        "proteins_100g": 0.3,
+        "carbohydrates_100g": 14,
+        "fat_100g": 0.2,
+        "fiber_100g": 2.4,
+        "sugars_100g": 10,
+        "saturated-fat_100g": 0.1,
+        "sodium_100g": 0.001
+      },
+      "serving_size": "100 g",
+      "nutriscore_grade": "a"
+    },
+    {
+      "code": "8412345678901",
+      "product_name": "Manzana Golden",
+      "brands": "Dulce Manzana",
+      "image_url": null,
+      "nutriments": {
+        "energy-kcal_100g": 57,
+        "proteins_100g": 0.4,
+        "carbohydrates_100g": 15,
+        "fat_100g": 0.1,
+        "fiber_100g": 3.1,
+        "sugars_100g": 12,
+        "saturated-fat_100g": 0,
+        "sodium_100g": 0.002
+      },
+      "serving_size": "100 g",
+      "nutriscore_grade": "a"
+    },
+    {
+      "code": "8412345678902",
+      "product_name": "Manzana Roja",
+      "brands": null,
+      "image_url": null,
+      "nutriments": {
+        "energy-kcal_100g": 55,
+        "proteins_100g": 0.3,
+        "carbohydrates_100g": 13,
+        "fat_100g": 0.2,
+        "fiber_100g": 2.0,
+        "sugars_100g": 11,
+        "sodium_100g": 0.001
+      },
+      "serving_size": null,
+      "nutriscore_grade": "a"
+    },
+    {
+      "code": "8412345678903",
+      "product_name": "Manzana Verde",
+      "brands": "VerdeValle",
+      "image_url": "https://example.com/verde.jpg",
+      "nutriments": {
+        "energy_100g": 226,
+        "energy-kcal_100g": 54,
+        "proteins_100g": 0.5,
+        "carbohydrates_100g": 12,
+        "fat_100g": 0.1,
+        "saturated-fat_100g": 0
+      },
+      "serving_size": "1 pieza (150 g)",
+      "nutriscore_grade": "a"
+    },
+    {
+      "code": "8412345678904",
+      "product_name": "Jugo de Manzana",
+      "brands": "Jugos del Valle",
+      "image_url": null,
+      "nutriments": {
+        "energy-kcal_100g": 46,
+        "proteins_100g": 0.1,
+        "carbohydrates_100g": 11,
+        "fat_100g": 0,
+        "sugars_100g": 10
+      },
+      "serving_size": "200 ml",
+      "nutriscore_grade": "b"
+    }
+  ]
+}

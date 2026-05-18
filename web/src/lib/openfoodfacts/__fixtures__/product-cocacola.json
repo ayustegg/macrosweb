@@ -1,0 +1,24 @@
+{
+  "code": "5449000000996",
+  "product": {
+    "product_name": "Coca-Cola Original",
+    "brands": "Coca-Cola",
+    "barcode": "5449000000996",
+    "image_url": "https://images.openfoodfacts.org/images/products/544/900/000/0996/1.jpg",
+    "nutriments": {
+      "energy-kcal_100g": 42,
+      "energy_100g": 176,
+      "proteins_100g": 0,
+      "carbohydrates_100g": 10.6,
+      "fat_100g": 0,
+      "sugars_100g": 10.6,
+      "saturated-fat_100g": 0,
+      "salt_100g": 0.01,
+      "sodium_100g": 0.004
+    },
+    "serving_size": "330 ml",
+    "nutriscore_grade": "e"
+  },
+  "status": 1,
+  "status_verbose": "product found"
+}
