@@ -3,20 +3,20 @@
   <g transform="rotate(-45 256 256)">
     
     <g transform="rotate(-90 256 256)">
-      <circle cx="256" cy="256" r="186.29984000000002" fill="none" stroke="oklch(0.66 0.18 16)" stroke-width="24.76032" opacity="0.2" />
-      <circle cx="256" cy="256" r="186.29984000000002" fill="none" stroke="oklch(0.66 0.18 16)" stroke-width="24.76032" stroke-linecap="round" stroke-dasharray="278.59242734546206 892.9639900724458" stroke-dashoffset="0" />
+      <circle cx="256" cy="256" r="186.29984000000002" fill="none" stroke="#e8604d" stroke-width="24.76032" opacity="0.2" />
+      <circle cx="256" cy="256" r="186.29984000000002" fill="none" stroke="#e8604d" stroke-width="24.76032" stroke-linecap="round" stroke-dasharray="278.59242734546206 892.9639900724458" stroke-dashoffset="0" />
     </g>
     <g transform="rotate(-90 256 256)">
-      <circle cx="256" cy="256" r="154.60663040000003" fill="none" stroke="oklch(0.62 0.16 252)" stroke-width="24.76032" opacity="0.2" />
-      <circle cx="256" cy="256" r="154.60663040000003" fill="none" stroke="oklch(0.62 0.16 252)" stroke-width="24.76032" stroke-linecap="round" stroke-dasharray="231.19846182819433 741.2236466936306" stroke-dashoffset="-242.85552713045624" />
+      <circle cx="256" cy="256" r="154.60663040000003" fill="none" stroke="#5282d9" stroke-width="24.76032" opacity="0.2" />
+      <circle cx="256" cy="256" r="154.60663040000003" fill="none" stroke="#5282d9" stroke-width="24.76032" stroke-linecap="round" stroke-dasharray="231.19846182819433 741.2236466936306" stroke-dashoffset="-242.85552713045624" />
     </g>
     <g transform="rotate(-90 256 256)">
-      <circle cx="256" cy="256" r="122.91342080000001" fill="none" stroke="oklch(0.74 0.15 74)" stroke-width="24.76032" opacity="0.2" />
-      <circle cx="256" cy="256" r="122.91342080000001" fill="none" stroke="oklch(0.74 0.15 74)" stroke-width="24.76032" stroke-linecap="round" stroke-dasharray="183.80449631092657 589.4833033148153" stroke-dashoffset="-386.1438998128709" />
+      <circle cx="256" cy="256" r="122.91342080000001" fill="none" stroke="#c9bc3a" stroke-width="24.76032" opacity="0.2" />
+      <circle cx="256" cy="256" r="122.91342080000001" fill="none" stroke="#c9bc3a" stroke-width="24.76032" stroke-linecap="round" stroke-dasharray="183.80449631092657 589.4833033148153" stroke-dashoffset="-386.1438998128709" />
     </g>
     <g transform="rotate(-90 256 256)">
-      <circle cx="256" cy="256" r="91.22021120000001" fill="none" stroke="oklch(0.58 0.18 295)" stroke-width="24.76032" opacity="0.2" />
-      <circle cx="256" cy="256" r="91.22021120000001" fill="none" stroke="oklch(0.58 0.18 295)" stroke-width="24.76032" stroke-linecap="round" stroke-dasharray="136.41053079365878 437.742959936" stroke-dashoffset="-429.8651180472441" />
+      <circle cx="256" cy="256" r="91.22021120000001" fill="none" stroke="#9458c6" stroke-width="24.76032" opacity="0.2" />
+      <circle cx="256" cy="256" r="91.22021120000001" fill="none" stroke="#9458c6" stroke-width="24.76032" stroke-linecap="round" stroke-dasharray="136.41053079365878 437.742959936" stroke-dashoffset="-429.8651180472441" />
     </g>
   </g>
 </svg>
