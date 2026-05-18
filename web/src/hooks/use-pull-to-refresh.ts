@@ -10,6 +10,8 @@ import {
 
 const DEFAULT_THRESHOLD = 64;
 const DEFAULT_MAX_PULL = 96;
+/** Minimum downward movement before pull steals the gesture (keeps taps as clicks). */
+const PULL_ACTIVATION_PX = 12;
 const DEFAULT_SCROLL_SELECTOR = ".app-shell-main";
 const DEFAULT_MIN_REFRESH_MS = 600;
 
@@ -53,6 +55,7 @@ export function usePullToRefresh(
 
   const containerRef = useRef<HTMLDivElement>(null);
   const startYRef = useRef<number | null>(null);
+  const pullActiveRef = useRef(false);
   const pullDistanceRef = useRef(0);
   const onRefreshRef = useRef(onRefresh);
   const refreshingRef = useRef(false);
@@ -90,6 +93,7 @@ export function usePullToRefresh(
     const onTouchStart = (e: TouchEvent) => {
       if (refreshingRef.current || !isAtScrollTop()) return;
       startYRef.current = e.touches[0]!.clientY;
+      pullActiveRef.current = false;
     };
 
     const onTouchMove = (e: TouchEvent) => {
@@ -99,11 +103,19 @@ export function usePullToRefresh(
       if (dy <= 0) {
         if (pullDistanceRef.current > 0) setPull(0);
         setIsDragging(false);
+        pullActiveRef.current = false;
         return;
       }
 
-      if (!isAtScrollTop()) return;
+      if (!isAtScrollTop()) {
+        startYRef.current = null;
+        pullActiveRef.current = false;
+        return;
+      }
 
+      if (!pullActiveRef.current && dy < PULL_ACTIVATION_PX) return;
+
+      pullActiveRef.current = true;
       e.preventDefault();
       setIsDragging(true);
       setPull(dampedPull(dy, maxPull));
@@ -111,8 +123,12 @@ export function usePullToRefresh(
 
     const onTouchEnd = async () => {
       if (startYRef.current === null) return;
+      const wasPull = pullActiveRef.current;
       startYRef.current = null;
+      pullActiveRef.current = false;
       setIsDragging(false);
+
+      if (!wasPull) return;
 
       const distance = pullDistanceRef.current;
       if (distance < threshold) {

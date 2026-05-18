@@ -139,7 +139,7 @@ export function TodayPageClient({
 
         <ContentCrossfade
           showB={!isDateNavigating}
-          a={<TodayContentSkeleton />}
+          a={<TodayContentSkeleton summary={summary} goal={goal} />}
           b={
             <div className={cn("flex flex-col gap-3.5", CONTENT_FADE_IN)}>
               <DailyMacroSummary summary={summary} goal={goal} />

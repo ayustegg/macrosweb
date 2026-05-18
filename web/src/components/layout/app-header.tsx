@@ -17,14 +17,15 @@ export function AppHeader({ initials }: Props) {
   const pathname = usePathname();
   const { isNavigating, startNavigation } = useTabNavigation();
   const prefetchTab = useTabPrefetch();
-  const { rotation, transition } = useHeaderBrandMotion();
+  const { rotation, transition, settleDurationMs, settleEasing } =
+    useHeaderBrandMotion();
 
   const profileActive =
     pathname === "/profile" || pathname.startsWith("/profile/");
 
   return (
     <header
-      className="border-border/80 bg-background/90 w-full border-b backdrop-blur-xl backdrop-saturate-150"
+      className="app-shell-chrome border-border/80 bg-background/90 w-full border-b backdrop-blur-xl backdrop-saturate-150"
       aria-busy={isNavigating}
     >
       <div className="px-page flex w-full items-center gap-3 py-2.5">
@@ -33,14 +34,16 @@ export function AppHeader({ initials }: Props) {
           prefetch
           className="focus-visible:ring-ring flex min-w-0 flex-1 items-center gap-2.5 rounded-sm outline-none focus-visible:ring-2"
           onMouseEnter={() => prefetchTab("/")}
-          onClick={() => startNavigation("/")}
+          onClick={() => {
+            if (pathname !== "/") startNavigation("/");
+          }}
         >
           <span
             className="inline-flex shrink-0 will-change-transform"
             style={{
               transform: `rotate(${rotation}deg)`,
               transition: transition
-                ? "transform 0.78s cubic-bezier(0.22, 1, 0.36, 1)"
+                ? `transform ${settleDurationMs}ms ${settleEasing}`
                 : "none",
             }}
             aria-hidden

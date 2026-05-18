@@ -20,6 +20,10 @@ const SPIN_DEG_PER_SEC = 420;
 const DATE_NAV_MIN_MS = 520;
 const DATE_NAV_MAX_MS = 8000;
 
+/** Slow ease-back to rest angle after tab/date/refresh spin. */
+export const SETTLE_ROTATION_MS = 2800;
+export const SETTLE_ROTATION_EASING = "cubic-bezier(0.12, 1, 0.28, 1)";
+
 function prefersReducedMotion(): boolean {
   if (typeof window === "undefined") return false;
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -34,6 +38,8 @@ export interface PullBrandState {
 interface HeaderBrandMotionContextValue {
   rotation: number;
   transition: boolean;
+  settleDurationMs: number;
+  settleEasing: string;
   isDateNavigating: boolean;
   setPullState: (state: PullBrandState) => void;
   startDateNavigation: (targetDate: string) => void;
@@ -93,9 +99,11 @@ export function HeaderBrandMotionProvider({
   });
   const [spinAngle, setSpinAngle] = useState(0);
   const [dateNavigating, setDateNavigating] = useState(false);
-  const [settleFrom, setSettleFrom] = useState<number | null>(null);
+  const [settleHold, setSettleHold] = useState<number | null>(null);
+  const [isSettling, setIsSettling] = useState(false);
 
   const spinOriginRef = useRef(0);
+  const spinAngleRef = useRef(0);
   const wasSpinningRef = useRef(false);
   const dateTargetRef = useRef<string | null>(null);
   const dateStartedRef = useRef(0);
@@ -116,36 +124,54 @@ export function HeaderBrandMotionProvider({
   useEffect(() => {
     if (!spinning) return;
 
-    spinOriginRef.current = settleFrom !== null ? settleFrom : idleRotation;
+    spinOriginRef.current = settleHold !== null ? settleHold : idleRotation;
     const start = performance.now();
     let frame = 0;
 
     const tick = (now: number) => {
       const deg =
         spinOriginRef.current + ((now - start) / 1000) * SPIN_DEG_PER_SEC;
+      spinAngleRef.current = deg;
       setSpinAngle(deg);
       frame = requestAnimationFrame(tick);
     };
 
     frame = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame);
-  }, [spinning, settleFrom, idleRotation]);
+  }, [spinning, settleHold, idleRotation]);
 
   useEffect(() => {
-    if (wasSpinningRef.current && !spinning) {
-      setSettleFrom(spinAngle);
-      let outer = 0;
-      let inner = 0;
-      outer = window.requestAnimationFrame(() => {
-        inner = window.requestAnimationFrame(() => setSettleFrom(null));
-      });
-      return () => {
-        window.cancelAnimationFrame(outer);
-        window.cancelAnimationFrame(inner);
-      };
+    if (!(wasSpinningRef.current && !spinning)) {
+      wasSpinningRef.current = spinning;
+      return;
     }
     wasSpinningRef.current = spinning;
-  }, [spinning, spinAngle]);
+
+    if (reducedMotion) return;
+
+    const angle = spinAngleRef.current;
+    let settleTimer = 0;
+    let inner = 0;
+    const outer = window.requestAnimationFrame(() => {
+      setSettleHold(angle);
+      inner = window.requestAnimationFrame(() => {
+        setSettleHold(null);
+        setIsSettling(true);
+        settleTimer = window.setTimeout(
+          () => setIsSettling(false),
+          SETTLE_ROTATION_MS
+        );
+      });
+    });
+
+    return () => {
+      window.cancelAnimationFrame(outer);
+      window.cancelAnimationFrame(inner);
+      window.clearTimeout(settleTimer);
+      setIsSettling(false);
+      setSettleHold(null);
+    };
+  }, [reducedMotion, spinning]);
 
   useEffect(() => {
     if (!dateNavigating) return;
@@ -155,12 +181,12 @@ export function HeaderBrandMotionProvider({
   }, [completeDateNavigation, dateNavigating]);
 
   const rotation = useMemo(() => {
-    if (settleFrom !== null) return settleFrom;
+    if (settleHold !== null) return settleHold;
     if (spinning) return spinAngle;
     return idleRotation;
-  }, [settleFrom, spinning, spinAngle, idleRotation]);
+  }, [settleHold, spinning, spinAngle, idleRotation]);
 
-  const transition = !pull.isDragging && settleFrom !== null;
+  const transition = isSettling && !pull.isDragging;
 
   const startDateNavigation = useCallback(
     (targetDate: string) => {
@@ -175,6 +201,8 @@ export function HeaderBrandMotionProvider({
   const value: HeaderBrandMotionContextValue = {
     rotation,
     transition,
+    settleDurationMs: SETTLE_ROTATION_MS,
+    settleEasing: SETTLE_ROTATION_EASING,
     isDateNavigating: dateNavigating,
     setPullState: setPull,
     startDateNavigation,

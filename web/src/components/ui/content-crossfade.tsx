@@ -29,7 +29,9 @@ export function ContentCrossfade({
         className={cn(
           CONTENT_FADE_TRANSITION,
           "min-h-0",
-          showB ? "pointer-events-none opacity-0" : "opacity-100"
+          showB
+            ? "pointer-events-none invisible z-0 opacity-0"
+            : "z-10 opacity-100"
         )}
       >
         {a}
@@ -39,7 +41,9 @@ export function ContentCrossfade({
         className={cn(
           CONTENT_FADE_TRANSITION,
           "min-h-0",
-          showB ? "opacity-100" : "pointer-events-none opacity-0"
+          showB
+            ? "z-10 opacity-100"
+            : "pointer-events-none invisible z-0 opacity-0"
         )}
       >
         {b}

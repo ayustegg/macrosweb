@@ -20,7 +20,7 @@ export function BottomNav() {
 
   return (
     <nav
-      className="border-border/80 bg-background/95 pb-safe w-full border-t backdrop-blur-xl backdrop-saturate-150"
+      className="app-shell-chrome border-border/80 bg-background/95 pb-safe w-full border-t backdrop-blur-xl backdrop-saturate-150"
       aria-label="Navegación principal"
     >
       <div
@@ -47,7 +47,7 @@ export function BottomNav() {
               onClick={() => {
                 if (!active) startNavigation(href);
               }}
-              className={`flex flex-col items-center justify-center gap-0.5 transition-colors ${
+              className={`relative z-10 flex flex-col items-center justify-center gap-0.5 transition-colors ${
                 active ? "text-foreground" : "text-muted-foreground"
               }`}
             >
