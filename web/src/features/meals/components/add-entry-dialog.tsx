@@ -28,6 +28,8 @@ interface Props {
   food: Food;
   date?: string;
   defaultSlotId?: string;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
   onConfirm?: () => void;
   children: ReactNode;
 }
@@ -47,10 +49,14 @@ export function AddEntryDialog({
   food,
   date = todayString(),
   defaultSlotId,
+  open: openProp,
+  onOpenChange,
   onConfirm,
   children,
 }: Props) {
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = openProp ?? internalOpen;
+  const setOpen = onOpenChange ?? setInternalOpen;
   const [quantity, setQuantity] = useState("100");
   const [unit, setUnit] = useState<"g" | "ml" | "serving">("g");
   const [slotId, setSlotId] = useState(defaultSlotId ?? "");
@@ -137,7 +143,8 @@ export function AddEntryDialog({
       }
 
       toast.success(`Añadido a ${slotName}`);
-      setOpen(false);
+      onOpenChange?.(false);
+      setInternalOpen(false);
       onConfirm?.();
     } finally {
       setSubmitting(false);

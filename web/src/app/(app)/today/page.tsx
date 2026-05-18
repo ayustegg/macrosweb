@@ -1,12 +1,20 @@
-export default function TodayPage() {
+import { getDayLog } from "@/features/meals/queries";
+import { TodayPageClient } from "./today-client";
+
+function todayDate(): string {
+  const d = new Date();
   return (
-    <div className="flex flex-1 flex-col items-center justify-center px-4 py-12">
-      <p className="text-center text-lg font-medium">
-        Aún no has registrado nada hoy
-      </p>
-      <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-        Añadir comida →
-      </p>
-    </div>
+    d.getFullYear() +
+    "-" +
+    String(d.getMonth() + 1).padStart(2, "0") +
+    "-" +
+    String(d.getDate()).padStart(2, "0")
   );
+}
+
+export default async function TodayPage() {
+  const date = todayDate();
+  const dayLog = await getDayLog(date);
+
+  return <TodayPageClient dayLog={dayLog} date={date} />;
 }
