@@ -92,48 +92,51 @@ export function DailyMacroSummary({ summary, goal }: Props) {
             size={COMPACT_RING}
             compact
           />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className="num text-foreground text-[13px] leading-none font-bold">
+              {kcalPct}%
+            </span>
+          </div>
         </div>
 
         <div className="min-w-0 flex-1">
-          <div className="flex items-baseline justify-between gap-2">
-            <span className="text-muted-foreground text-[11px] font-medium tracking-wide uppercase">
-              Calorías
-            </span>
-            <span className="num text-foreground text-[17px] leading-tight font-semibold">
+          <div className="flex items-baseline gap-1">
+            <span className="num text-foreground text-[22px] leading-none font-bold tracking-tight">
               {fmt(summary.kcal)}
-              <span className="text-muted-foreground text-xs font-medium">
-                {" "}
-                / {fmt(goal.kcal)}
-              </span>
+            </span>
+            <span className="text-muted-foreground num pb-0.5 text-xs font-medium">
+              / {fmt(goal.kcal)} kcal
             </span>
           </div>
-          <p className="text-muted-foreground mt-0.5 text-xs">
-            Restante{" "}
+          <p className="text-muted-foreground mt-1 text-xs">
             <span className="num text-foreground font-semibold">
-              {fmt(remaining)} kcal
-            </span>
-            <span className="text-muted-foreground/80 mx-1.5">·</span>
-            <span className="num">{kcalPct}%</span>
+              {fmt(remaining)}
+            </span>{" "}
+            kcal restantes
           </p>
-          <p className="text-muted-foreground mt-1 truncate text-[11px]">
-            <MacroCompactLine
-              label="P"
-              value={summary.protein_g}
-              target={goal.protein_g}
+          <div
+            className="mt-2 h-1 overflow-hidden rounded-full"
+            style={{ background: "var(--macro-kcal-tint)" }}
+          >
+            <div
+              className="h-full rounded-full transition-[width] duration-500 ease-out"
+              style={{
+                width: `${kcalPct}%`,
+                background: "var(--macro-kcal)",
+              }}
             />
-            <span className="mx-1.5 opacity-40">·</span>
-            <MacroCompactLine
-              label="C"
-              value={summary.carbs_g}
-              target={goal.carbs_g}
-            />
-            <span className="mx-1.5 opacity-40">·</span>
-            <MacroCompactLine
-              label="G"
-              value={summary.fat_g}
-              target={goal.fat_g}
-            />
-          </p>
+          </div>
+          <div className="mt-2 flex gap-1.5">
+            {LEGENDS.map(({ key, label, color }) => (
+              <MacroChip
+                key={key}
+                label={label}
+                value={summary[key]}
+                target={goal[key]}
+                color={color}
+              />
+            ))}
+          </div>
         </div>
 
         <ChevronDown
@@ -198,22 +201,32 @@ export function DailyMacroSummary({ summary, goal }: Props) {
   );
 }
 
-function MacroCompactLine({
+function MacroChip({
   label,
   value,
   target,
+  color,
 }: {
   label: string;
   value: number;
   target: number;
+  color: string;
 }) {
+  const pct = Math.min(100, Math.round((value / (target || 1)) * 100));
   return (
-    <span>
-      {label}{" "}
-      <span className="num text-foreground font-medium">
+    <span className="bg-muted/50 border-border/60 inline-flex min-w-0 flex-1 items-center gap-1 rounded-md border px-1.5 py-0.5">
+      <span
+        className="size-1.5 shrink-0 rounded-full"
+        style={{ background: color }}
+        aria-hidden
+      />
+      <span className="text-muted-foreground truncate text-[10px] font-medium">
+        {label.charAt(0)}
+      </span>
+      <span className="num text-foreground ml-auto text-[10px] font-semibold">
         {Math.round(value)}
       </span>
-      <span className="opacity-60">/{target}g</span>
+      <span className="text-muted-foreground/70 num text-[9px]">{pct}%</span>
     </span>
   );
 }

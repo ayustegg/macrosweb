@@ -3,7 +3,7 @@
 import { useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-export const TAB_ROUTES = ["/", "/foods", "/recipes", "/profile"] as const;
+export const TAB_ROUTES = ["/", "/foods", "/recipes"] as const;
 
 /** Prefetch main tab routes on mount and on demand (hover / touch). */
 export function useTabPrefetch() {
@@ -13,6 +13,7 @@ export function useTabPrefetch() {
     for (const href of TAB_ROUTES) {
       router.prefetch(href);
     }
+    router.prefetch("/profile");
   }, [router]);
 
   return useCallback(

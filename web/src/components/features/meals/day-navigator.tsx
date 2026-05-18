@@ -41,28 +41,28 @@ function diffDays(a: string, b: string): number {
   return Math.round((da.getTime() - db.getTime()) / 86400000);
 }
 
-function formatLabel(dateStr: string, today: string): string {
-  const diff = diffDays(dateStr, today);
-  if (diff === 0) return "Hoy";
-  if (diff === -1) return "Ayer";
-  if (diff === -2) return "Anteayer";
-  if (diff === 1) return "Mañana";
+function formatLabel(dateStr: string): string {
   const d = new Date(dateStr + "T12:00:00");
   return d.toLocaleDateString("es", {
     weekday: "long",
     day: "numeric",
     month: "short",
-    year: "numeric",
   });
 }
 
-function formatSubline(dateStr: string): string {
+function formatSubline(dateStr: string, today: string): string {
+  const diff = diffDays(dateStr, today);
+  if (diff === 0) return "";
+  if (diff === -1) return "Ayer";
+  if (diff === -2) return "Anteayer";
+  if (diff === 1) return "Mañana";
+
   const d = new Date(dateStr + "T12:00:00");
-  return d.toLocaleDateString("es", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
+  const year = d.getFullYear();
+  const todayYear = new Date(today + "T12:00:00").getFullYear();
+  if (year !== todayYear) return String(year);
+
+  return d.toLocaleDateString("es", { month: "long", year: "numeric" });
 }
 
 interface SwipeState {
@@ -131,8 +131,8 @@ export function DayNavigator({ date, timezone = "UTC" }: Props) {
     return () => window.removeEventListener("keydown", handleKey);
   }, [goToRelative]);
 
-  const label = formatLabel(date, today);
-  const subline = formatSubline(date);
+  const label = formatLabel(date);
+  const subline = formatSubline(date, today);
 
   return (
     <section
@@ -161,9 +161,11 @@ export function DayNavigator({ date, timezone = "UTC" }: Props) {
           <span className="num text-[19px] leading-tight font-semibold capitalize">
             {label}
           </span>
-          <span className="text-muted-foreground text-[11px] font-medium tracking-wide uppercase">
-            {subline}
-          </span>
+          {subline ? (
+            <span className="text-muted-foreground text-[11px] font-medium tracking-wide uppercase">
+              {subline}
+            </span>
+          ) : null}
         </button>
 
         <Button

@@ -2,15 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Search, Utensils, User } from "lucide-react";
+import { Home, Search, Utensils } from "lucide-react";
 import { useTabNavigation } from "@/components/layout/tab-navigation-provider";
 import { useTabPrefetch } from "@/hooks/use-tab-prefetch";
 
 const items = [
-  { href: "/", label: "Hoy", Icon: Home },
+  { href: "/", label: "Día", Icon: Home },
   { href: "/foods", label: "Alimentos", Icon: Search },
   { href: "/recipes", label: "Recetas", Icon: Utensils },
-  { href: "/profile", label: "Perfil", Icon: User },
 ] as const;
 
 /** Bottom nav como footer del app shell (flujo del grid, no position:fixed). */
@@ -25,7 +24,7 @@ export function BottomNav() {
       aria-label="Navegación principal"
     >
       <div
-        className="px-page grid w-full grid-cols-4"
+        className="px-page grid w-full grid-cols-3"
         style={{ height: "var(--bottom-nav-height)" }}
       >
         {items.map(({ href, label, Icon }) => {
