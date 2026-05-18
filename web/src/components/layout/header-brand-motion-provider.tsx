@@ -45,6 +45,11 @@ interface HeaderBrandMotionContextValue {
   /** Date change or header home refresh — show today skeleton. */
   isTodayLoading: boolean;
   homeRefreshStartedRef: React.RefObject<number>;
+  pullProgress: number;
+  pullIsDragging: boolean;
+  pullRefreshing: boolean;
+  /** Bumps when pull-to-refresh finishes — replay macro ring fill. */
+  pullRefreshGeneration: number;
   setPullState: (state: PullBrandState) => void;
   startDateNavigation: (targetDate: string) => void;
   startHomeRefresh: () => void;
@@ -106,12 +111,14 @@ export function HeaderBrandMotionProvider({
   const [spinAngle, setSpinAngle] = useState(0);
   const [dateNavigating, setDateNavigating] = useState(false);
   const [homeRefreshing, setHomeRefreshing] = useState(false);
+  const [pullRefreshGeneration, setPullRefreshGeneration] = useState(0);
   const [settleHold, setSettleHold] = useState<number | null>(null);
   const [isSettling, setIsSettling] = useState(false);
 
   const spinOriginRef = useRef(0);
   const spinAngleRef = useRef(0);
   const wasSpinningRef = useRef(false);
+  const wasPullRefreshingRef = useRef(false);
   const dateTargetRef = useRef<string | null>(null);
   const dateStartedRef = useRef(0);
   const homeRefreshStartedRef = useRef(0);
@@ -207,6 +214,19 @@ export function HeaderBrandMotionProvider({
     return () => window.clearTimeout(failSafe);
   }, [completeHomeRefresh, homeRefreshing]);
 
+  useEffect(() => {
+    if (!(wasPullRefreshingRef.current && !pull.refreshing)) {
+      wasPullRefreshingRef.current = pull.refreshing;
+      return;
+    }
+    wasPullRefreshingRef.current = pull.refreshing;
+
+    const frame = requestAnimationFrame(() => {
+      setPullRefreshGeneration((g) => g + 1);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [pull.refreshing]);
+
   const rotation = useMemo(() => {
     if (settleHold !== null) return settleHold;
     if (spinning) return spinAngle;
@@ -234,6 +254,10 @@ export function HeaderBrandMotionProvider({
     isHomeRefreshing: homeRefreshing,
     isTodayLoading,
     homeRefreshStartedRef,
+    pullProgress: pull.progress,
+    pullIsDragging: pull.isDragging,
+    pullRefreshing: pull.refreshing,
+    pullRefreshGeneration,
     setPullState: setPull,
     startDateNavigation,
     startHomeRefresh,

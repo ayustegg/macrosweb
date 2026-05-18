@@ -83,6 +83,10 @@ export function TodayPageClient({
     isHomeRefreshing,
     homeRefreshStartedRef,
     completeHomeRefresh,
+    pullProgress,
+    pullIsDragging,
+    pullRefreshing,
+    pullRefreshGeneration,
   } = useHeaderBrandMotion();
   const [dayLogData, setDayLogData] = useState(() => dayLog);
   const snapshotRef = useRef<DayLogWithEntries | null>(null);
@@ -167,6 +171,13 @@ export function TodayPageClient({
 
   const hasEntries = dayLogData && Object.keys(dayLogData.slots).length > 0;
 
+  const ringPullPreview =
+    !isTodayLoading && (pullIsDragging || pullRefreshing)
+      ? pullRefreshing
+        ? 1
+        : pullProgress
+      : undefined;
+
   return (
     <PullToRefresh onRefresh={() => router.refresh()}>
       <div className="px-page flex flex-col gap-3.5 pt-2 pb-4">
@@ -184,7 +195,12 @@ export function TodayPageClient({
           }
           b={
             <div className={cn("flex flex-col gap-3.5", CONTENT_FADE_IN)}>
-              <DailyMacroSummary summary={summary} goal={goal} />
+              <DailyMacroSummary
+                summary={summary}
+                goal={goal}
+                pullPreviewProgress={ringPullPreview}
+                pullRefreshGeneration={pullRefreshGeneration}
+              />
               <MealsSectionHeader />
               {hasEntries ? (
                 <div className="flex flex-col gap-3.5">

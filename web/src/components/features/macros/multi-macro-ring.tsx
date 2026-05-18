@@ -14,8 +14,12 @@ interface Props {
   target: MacroTotals;
   size?: number;
   compact?: boolean;
-  /** Animate rings filling from empty on mount (e.g. loading skeleton). */
+  /** Animate rings filling from empty on mount / replay. */
   animateIn?: boolean;
+  /** Change to re-run fill animation (e.g. after pull-to-refresh). */
+  replayKey?: number;
+  /** 0–1 while pulling — scales ring fill as a live preview. */
+  previewProgress?: number;
 }
 
 const RINGS = [
@@ -42,6 +46,7 @@ const RINGS = [
 ] as const;
 
 const RING_FILL_MS = 920;
+const PULL_REPLAY_FILL_MS = 720;
 const RING_STAGGER_MS = 110;
 const RING_FILL_EASING = "cubic-bezier(0.22, 1, 0.36, 1)";
 
@@ -57,9 +62,13 @@ export function MultiMacroRing({
   size = 212,
   compact = false,
   animateIn = false,
+  replayKey = 0,
+  previewProgress,
 }: Props) {
   const shouldAnimate = animateIn && !prefersReducedMotion();
   const [filled, setFilled] = useState(() => !shouldAnimate);
+  const fillMs = replayKey > 0 ? PULL_REPLAY_FILL_MS : RING_FILL_MS;
+  const isPreview = previewProgress !== undefined;
 
   useEffect(() => {
     if (!shouldAnimate) return;
@@ -73,7 +82,7 @@ export function MultiMacroRing({
       cancelAnimationFrame(outer);
       cancelAnimationFrame(inner);
     };
-  }, [shouldAnimate]);
+  }, [shouldAnimate, replayKey]);
 
   const cx = size / 2;
   const cy = size / 2;
@@ -108,12 +117,18 @@ export function MultiMacroRing({
         const C = 2 * Math.PI * r;
         const pct = Math.max(0, Math.min(1.6, v / t));
         const fillRatio = Math.min(pct, 1);
-        const targetOffset = C * (1 - fillRatio);
-        const startOffset = C;
-        const offset = filled ? targetOffset : startOffset;
+
+        let displayRatio = fillRatio;
+        if (shouldAnimate && !filled) {
+          displayRatio = 0;
+        } else if (isPreview) {
+          displayRatio = fillRatio * previewProgress;
+        }
+
+        const targetOffset = C * (1 - displayRatio);
         const delay = shouldAnimate ? i * RING_STAGGER_MS : 0;
-        const over = pct > 1;
-        const overDelay = delay + RING_FILL_MS;
+        const over = pct > 1 && !isPreview && (!shouldAnimate || filled);
+        const overDelay = delay + fillMs;
 
         return (
           <g key={key} transform={`rotate(-90 ${cx} ${cy})`}>
@@ -134,11 +149,13 @@ export function MultiMacroRing({
               strokeWidth={stroke}
               strokeLinecap="round"
               strokeDasharray={C}
-              strokeDashoffset={offset}
+              strokeDashoffset={targetOffset}
               style={{
                 transition: shouldAnimate
-                  ? `stroke-dashoffset ${RING_FILL_MS}ms ${RING_FILL_EASING} ${delay}ms`
-                  : undefined,
+                  ? `stroke-dashoffset ${fillMs}ms ${RING_FILL_EASING} ${delay}ms`
+                  : isPreview
+                    ? "stroke-dashoffset 0.14s ease-out"
+                    : undefined,
               }}
             />
             {over && (
@@ -150,12 +167,12 @@ export function MultiMacroRing({
                 stroke={color}
                 strokeWidth={stroke}
                 strokeLinecap="round"
-                opacity={filled ? 0.5 : 0}
+                opacity={0.5}
                 strokeDasharray={C}
-                strokeDashoffset={filled ? C * (2 - pct) : C}
+                strokeDashoffset={C * (2 - pct)}
                 style={{
                   transition: shouldAnimate
-                    ? `stroke-dashoffset ${RING_FILL_MS * 0.65}ms ${RING_FILL_EASING} ${overDelay}ms, opacity 200ms ${overDelay}ms`
+                    ? `stroke-dashoffset ${fillMs * 0.65}ms ${RING_FILL_EASING} ${overDelay}ms`
                     : undefined,
                 }}
               />

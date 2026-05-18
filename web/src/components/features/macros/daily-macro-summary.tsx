@@ -28,6 +28,10 @@ interface Goal {
 interface Props {
   summary: Summary;
   goal: Goal | null;
+  /** 0–1 while pull-to-refresh dragging/loading — previews kcal bar + rings. */
+  pullPreviewProgress?: number;
+  /** >0 replays ring fill after pull-to-refresh (no skeleton). */
+  pullRefreshGeneration?: number;
 }
 
 const COMPACT_RING = 52;
@@ -81,7 +85,12 @@ const LEGENDS = [
   },
 ] as const;
 
-export function DailyMacroSummary({ summary, goal }: Props) {
+export function DailyMacroSummary({
+  summary,
+  goal,
+  pullPreviewProgress,
+  pullRefreshGeneration = 0,
+}: Props) {
   const [expanded, setExpanded] = useState(false);
 
   if (!goal) {
@@ -102,6 +111,11 @@ export function DailyMacroSummary({ summary, goal }: Props) {
   const remaining = Math.max(0, goal.kcal - summary.kcal);
   const fmt = (n: number) => Math.round(n).toLocaleString("es-ES");
   const kcalPct = Math.min(100, Math.round((summary.kcal / goal.kcal) * 100));
+  const isPullPreview = pullPreviewProgress !== undefined;
+  const displayKcalPct = isPullPreview
+    ? kcalPct * pullPreviewProgress
+    : kcalPct;
+  const replayRings = pullRefreshGeneration > 0;
 
   return (
     <SummaryCard className="overflow-hidden">
@@ -119,10 +133,14 @@ export function DailyMacroSummary({ summary, goal }: Props) {
           style={{ width: COMPACT_RING, height: COMPACT_RING }}
         >
           <MultiMacroRing
+            key={`compact-${pullRefreshGeneration}`}
             totals={summary}
             target={goal}
             size={COMPACT_RING}
             compact
+            animateIn={replayRings}
+            replayKey={pullRefreshGeneration}
+            previewProgress={pullPreviewProgress}
           />
         </div>
 
@@ -151,10 +169,13 @@ export function DailyMacroSummary({ summary, goal }: Props) {
             style={{ background: "var(--macro-kcal-tint)" }}
           >
             <div
-              className="h-full rounded-full transition-[width] duration-500 ease-out"
+              className="h-full rounded-full"
               style={{
-                width: `${kcalPct}%`,
+                width: `${displayKcalPct}%`,
                 background: "var(--macro-kcal)",
+                transition: isPullPreview
+                  ? "width 0.14s ease-out"
+                  : "width 0.5s ease-out",
               }}
             />
           </div>
