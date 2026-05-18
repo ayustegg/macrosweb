@@ -20,6 +20,8 @@ interface Props {
   replayKey?: number;
   /** 0–1 while pulling — scales ring fill as a live preview. */
   previewProgress?: number;
+  fillMs?: number;
+  staggerMs?: number;
 }
 
 const RINGS = [
@@ -64,10 +66,14 @@ export function MultiMacroRing({
   animateIn = false,
   replayKey = 0,
   previewProgress,
+  fillMs: fillMsProp,
+  staggerMs: staggerMsProp,
 }: Props) {
   const shouldAnimate = animateIn && !prefersReducedMotion();
   const [filled, setFilled] = useState(() => !shouldAnimate);
-  const fillMs = replayKey > 0 ? PULL_REPLAY_FILL_MS : RING_FILL_MS;
+  const fillMs =
+    fillMsProp ?? (replayKey > 0 ? PULL_REPLAY_FILL_MS : RING_FILL_MS);
+  const staggerMs = staggerMsProp ?? RING_STAGGER_MS;
   const isPreview = previewProgress !== undefined;
 
   useEffect(() => {
@@ -126,7 +132,7 @@ export function MultiMacroRing({
         }
 
         const targetOffset = C * (1 - displayRatio);
-        const delay = shouldAnimate ? i * RING_STAGGER_MS : 0;
+        const delay = shouldAnimate ? i * staggerMs : 0;
         const over = pct > 1 && !isPreview && (!shouldAnimate || filled);
         const overDelay = delay + fillMs;
 

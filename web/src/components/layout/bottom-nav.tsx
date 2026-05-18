@@ -20,7 +20,7 @@ export function BottomNav() {
 
   return (
     <nav
-      className="app-shell-chrome border-border/80 bg-background/95 pb-safe w-full border-t backdrop-blur-xl backdrop-saturate-150"
+      className="app-shell-chrome border-border/80 bg-background/95 pb-safe-nav w-full border-t backdrop-blur-xl backdrop-saturate-150"
       aria-label="Navegación principal"
     >
       <div

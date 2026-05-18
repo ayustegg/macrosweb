@@ -12,7 +12,7 @@ import {
   DATE_NAV_MIN_MS,
   useHeaderBrandMotion,
 } from "@/components/layout/header-brand-motion-provider";
-import { TodayContentSkeleton } from "@/components/features/meals/today-content-skeleton";
+import { TodayDayLoading } from "@/components/features/meals/today-day-loading";
 import { ContentCrossfade } from "@/components/ui/content-crossfade";
 import { CONTENT_FADE_IN } from "@/lib/content-fade";
 import { cn } from "@/lib/utils";
@@ -84,7 +84,6 @@ export function TodayPageClient({
     pullProgress,
     pullIsDragging,
     pullRefreshing,
-    pullRefreshGeneration,
   } = useHeaderBrandMotion();
   const [dayLogData, setDayLogData] = useState(() => dayLog);
   const snapshotRef = useRef<DayLogWithEntries | null>(null);
@@ -184,7 +183,8 @@ export function TodayPageClient({
         <ContentCrossfade
           showB={!isTodayLoading}
           a={
-            <TodayContentSkeleton
+            <TodayDayLoading
+              key={`${date}-${isHomeRefreshing ? "refresh" : "nav"}`}
               summary={summary}
               goal={goal}
               animationKey={`${date}-${isHomeRefreshing ? "refresh" : "nav"}`}
@@ -197,7 +197,6 @@ export function TodayPageClient({
                 summary={summary}
                 goal={goal}
                 pullPreviewProgress={ringPullPreview}
-                pullRefreshGeneration={pullRefreshGeneration}
               />
               {hasMealSlots ? (
                 <>

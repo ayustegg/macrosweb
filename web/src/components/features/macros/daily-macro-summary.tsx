@@ -9,6 +9,7 @@ import {
   COLLAPSE_INNER,
   collapseInnerClass,
 } from "@/lib/collapse-transition";
+import { COMPACT_MACRO_RING_PX } from "@/lib/macro-ring-layout";
 import { cn } from "@/lib/utils";
 
 interface Summary {
@@ -30,11 +31,8 @@ interface Props {
   goal: Goal | null;
   /** 0–1 while pull-to-refresh dragging/loading — previews kcal bar + rings. */
   pullPreviewProgress?: number;
-  /** >0 replays ring fill after pull-to-refresh (no skeleton). */
-  pullRefreshGeneration?: number;
 }
 
-const COMPACT_RING = 52;
 const EXPANDED_RING = 200;
 
 const COMPACT_MACROS = [
@@ -89,7 +87,6 @@ export function DailyMacroSummary({
   summary,
   goal,
   pullPreviewProgress,
-  pullRefreshGeneration = 0,
 }: Props) {
   const [expanded, setExpanded] = useState(false);
 
@@ -115,10 +112,8 @@ export function DailyMacroSummary({
   const displayKcalPct = isPullPreview
     ? kcalPct * pullPreviewProgress
     : kcalPct;
-  const replayRings = pullRefreshGeneration > 0;
-
   return (
-    <SummaryCard className="overflow-hidden">
+    <SummaryCard className="macro-summary-card overflow-hidden">
       <button
         type="button"
         onClick={() => setExpanded((o) => !o)}
@@ -129,17 +124,17 @@ export function DailyMacroSummary({
         }
       >
         <div
-          className="shrink-0"
-          style={{ width: COMPACT_RING, height: COMPACT_RING }}
+          className="macro-ring-slot shrink-0"
+          style={{
+            width: COMPACT_MACRO_RING_PX,
+            height: COMPACT_MACRO_RING_PX,
+          }}
         >
           <MultiMacroRing
-            key={`compact-${pullRefreshGeneration}`}
             totals={summary}
             target={goal}
-            size={COMPACT_RING}
+            size={COMPACT_MACRO_RING_PX}
             compact
-            animateIn={replayRings}
-            replayKey={pullRefreshGeneration}
             previewProgress={pullPreviewProgress}
           />
         </div>
