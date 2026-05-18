@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { DayNavigator } from "@/features/meals/components/day-navigator";
+import { DayNavigator } from "@/components/features/meals/day-navigator";
 import { MealSlotCard } from "@/features/meals/components/meal-slot-card";
 import { DailyMacroSummary } from "@/components/features/macros/daily-macro-summary";
 import type { DayLogWithEntries } from "@/features/meals/queries";
@@ -18,13 +18,14 @@ interface Props {
   dayLog: DayLogWithEntries | null;
   goal: Goal | null;
   date: string;
+  timezone?: string;
 }
 
 interface FetchResponse {
   slots: MealSlot[];
 }
 
-export function TodayPageClient({ dayLog, goal, date }: Props) {
+export function TodayPageClient({ dayLog, goal, date, timezone }: Props) {
   const [slots, setSlots] = useState<MealSlot[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -56,7 +57,7 @@ export function TodayPageClient({ dayLog, goal, date }: Props) {
   return (
     <div className="mx-auto max-w-md space-y-4 px-4 pt-4 pb-24">
       {/* Day navigator */}
-      <DayNavigator date={date} />
+      <DayNavigator date={date} timezone={timezone} />
 
       {/* Macro summary */}
       <DailyMacroSummary summary={summary} goal={goal} />
