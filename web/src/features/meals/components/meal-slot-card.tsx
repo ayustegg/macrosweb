@@ -3,7 +3,9 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Plus, Trash2, Utensils } from "lucide-react";
+import { toast } from "sonner";
 import { EntryActions } from "@/features/meals/components/entry-actions";
+import { deleteEntry } from "@/features/meals/actions";
 import { useSwipeDelete } from "@/hooks/use-swipe-delete";
 import type { Entry } from "@/types/entry";
 import type { SlotTotals } from "@/features/meals/queries";
@@ -91,6 +93,7 @@ export function MealSlotCard({
                 entry={entry}
                 onDelete={onDeleteEntry}
                 onEdit={() => setEditingEntry(entry)}
+                onRollback={onRollback}
               />
             ))}
           </div>
@@ -128,12 +131,21 @@ function SwipeableEntry({
   entry,
   onDelete,
   onEdit,
+  onRollback,
 }: {
   entry: Entry;
   onDelete?: (entryId: string) => void;
   onEdit: () => void;
+  onRollback?: () => void;
 }) {
-  const { offsetX, handlers } = useSwipeDelete(() => onDelete?.(entry.id), 88);
+  const { offsetX, handlers } = useSwipeDelete(async () => {
+    onDelete?.(entry.id);
+    const result = await deleteEntry(entry.id);
+    if (!result.ok) {
+      onRollback?.();
+      toast.error(result.error);
+    }
+  }, 88);
 
   return (
     <div className="relative overflow-hidden" {...handlers}>

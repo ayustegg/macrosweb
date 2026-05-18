@@ -1,5 +1,5 @@
 import { getCurrentUser } from "@/features/auth/queries";
-import { getDayLog, getTotalEntriesCount } from "@/features/meals/queries";
+import { getDayLog } from "@/features/meals/queries";
 import { getProfile, getActiveGoal } from "@/features/profile/queries";
 import { TodayPageClient } from "./today-client";
 import { notFound } from "next/navigation";
@@ -28,19 +28,18 @@ export default async function TodayPage({ searchParams }: Props) {
   const { date: paramDate } = await searchParams;
   const date = paramDate ?? todayInTimezone(tz);
 
-  const [dayLog, goal, entriesCount] = await Promise.all([
+  const [dayLog, goal] = await Promise.all([
     getDayLog(date),
     getActiveGoal(user.id),
-    getTotalEntriesCount(),
   ]);
 
   return (
     <TodayPageClient
+      key={date}
       dayLog={dayLog}
       goal={goal}
       date={date}
       timezone={tz}
-      hasAnyEntry={entriesCount > 0}
     />
   );
 }

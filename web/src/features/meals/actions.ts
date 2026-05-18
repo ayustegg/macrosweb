@@ -480,3 +480,67 @@ export async function deleteSlot(
   revalidatePath("/profile");
   return { ok: true, data: { hasEntries: false, totalSlots: totalSlots ?? 0 } };
 }
+
+export async function addRecipeEntry(input: {
+  date: string;
+  meal_slot_id?: string;
+  recipe_id: string;
+  recipe_name: string;
+  servings: number;
+  kcal: number;
+  protein_g: number;
+  carbs_g: number;
+  fat_g: number;
+}): Promise<ActionResult<Entry>> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: "No hay sesión activa" };
+
+  try {
+    const dayLog = await getOrCreateDayLog(input.date);
+
+    const { data: maxPos } = await supabase
+      .from("entries")
+      .select("position")
+      .eq("day_log_id", dayLog.id)
+      .order("position", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    const nextPosition = (maxPos?.position ?? -1) + 1;
+
+    const { data: entry, error } = await supabase
+      .from("entries")
+      .insert({
+        day_log_id: dayLog.id,
+        meal_slot_id: input.meal_slot_id ?? null,
+        source_type: "recipe",
+        source_id: input.recipe_id,
+        source_name: input.recipe_name,
+        quantity: input.servings,
+        unit: "serving",
+        kcal: input.kcal,
+        protein_g: input.protein_g,
+        carbs_g: input.carbs_g,
+        fat_g: input.fat_g,
+        nutrients: {} as never,
+        position: nextPosition,
+      })
+      .select("*")
+      .single();
+
+    if (error) return { ok: false, error: error.message };
+
+    await recalculateDayLogTotals(dayLog.id);
+    revalidatePath("/today");
+
+    return { ok: true, data: entry as unknown as Entry };
+  } catch (err) {
+    return {
+      ok: false,
+      error: err instanceof Error ? err.message : "Error al añadir la receta",
+    };
+  }
+}
