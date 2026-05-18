@@ -164,7 +164,6 @@ export function DailyMacroSummary({ summary, goal }: Props) {
                 key={key}
                 short={short}
                 value={summary[key]}
-                target={goal[key]}
                 color={color}
                 isKcal={key === "kcal"}
               />
@@ -237,17 +236,14 @@ export function DailyMacroSummary({ summary, goal }: Props) {
 function MacroChip({
   short,
   value,
-  target,
   color,
   isKcal = false,
 }: {
   short: string;
   value: number;
-  target: number;
   color: string;
   isKcal?: boolean;
 }) {
-  const pct = Math.min(100, Math.round((value / (target || 1)) * 100));
   const unit = isKcal ? "" : "g";
 
   return (
@@ -265,9 +261,6 @@ function MacroChip({
       <span className="num text-foreground text-[11px] leading-none font-bold">
         {isKcal ? Math.round(value).toLocaleString("es-ES") : Math.round(value)}
         {unit}
-      </span>
-      <span className="text-muted-foreground/70 num text-[9px] leading-none">
-        {pct}%
       </span>
     </span>
   );

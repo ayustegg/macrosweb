@@ -17,8 +17,13 @@ export function AppHeader({ initials }: Props) {
   const pathname = usePathname();
   const { isNavigating, startNavigation } = useTabNavigation();
   const prefetchTab = useTabPrefetch();
-  const { rotation, transition, settleDurationMs, settleEasing } =
-    useHeaderBrandMotion();
+  const {
+    rotation,
+    transition,
+    settleDurationMs,
+    settleEasing,
+    startHomeRefresh,
+  } = useHeaderBrandMotion();
 
   const profileActive =
     pathname === "/profile" || pathname.startsWith("/profile/");
@@ -34,8 +39,13 @@ export function AppHeader({ initials }: Props) {
           prefetch
           className="focus-visible:ring-ring flex min-w-0 flex-1 items-center gap-2.5 rounded-sm outline-none focus-visible:ring-2"
           onMouseEnter={() => prefetchTab("/")}
-          onClick={() => {
-            if (pathname !== "/") startNavigation("/");
+          onClick={(e) => {
+            if (pathname === "/") {
+              e.preventDefault();
+              startHomeRefresh();
+              return;
+            }
+            startNavigation("/");
           }}
         >
           <span

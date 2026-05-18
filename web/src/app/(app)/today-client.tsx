@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useCallback } from "react";
+import { useRef, useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { DayNavigator } from "@/components/features/meals/day-navigator";
 import { MealSlotCard } from "@/features/meals/components/meal-slot-card";
@@ -8,7 +8,10 @@ import { DailyMacroSummary } from "@/components/features/macros/daily-macro-summ
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { PullToRefresh } from "@/components/layout/pull-to-refresh";
-import { useHeaderBrandMotion } from "@/components/layout/header-brand-motion-provider";
+import {
+  DATE_NAV_MIN_MS,
+  useHeaderBrandMotion,
+} from "@/components/layout/header-brand-motion-provider";
 import { TodayContentSkeleton } from "@/components/features/meals/today-content-skeleton";
 import { ContentCrossfade } from "@/components/ui/content-crossfade";
 import { CONTENT_FADE_IN } from "@/lib/content-fade";
@@ -75,9 +78,41 @@ export function TodayPageClient({
   hasAnyEntry = false,
 }: Props) {
   const router = useRouter();
-  const { isDateNavigating } = useHeaderBrandMotion();
+  const {
+    isTodayLoading,
+    isHomeRefreshing,
+    homeRefreshStartedRef,
+    completeHomeRefresh,
+  } = useHeaderBrandMotion();
   const [dayLogData, setDayLogData] = useState(() => dayLog);
   const snapshotRef = useRef<DayLogWithEntries | null>(null);
+
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => setDayLogData(dayLog));
+    return () => cancelAnimationFrame(frame);
+  }, [dayLog]);
+
+  useEffect(() => {
+    if (!isHomeRefreshing) return;
+    router.refresh();
+  }, [isHomeRefreshing, router]);
+
+  useEffect(() => {
+    if (!isHomeRefreshing) return;
+
+    const started = homeRefreshStartedRef.current;
+    const remaining = Math.max(0, DATE_NAV_MIN_MS - (Date.now() - started));
+    const minTimer = window.setTimeout(completeHomeRefresh, remaining);
+
+    return () => window.clearTimeout(minTimer);
+  }, [isHomeRefreshing, completeHomeRefresh, homeRefreshStartedRef]);
+
+  useEffect(() => {
+    if (!isHomeRefreshing) return;
+    const elapsed = Date.now() - homeRefreshStartedRef.current;
+    if (elapsed < DATE_NAV_MIN_MS) return;
+    completeHomeRefresh();
+  }, [dayLog, isHomeRefreshing, completeHomeRefresh, homeRefreshStartedRef]);
 
   // --- Optimistic callbacks with rollback ---
 
@@ -138,8 +173,15 @@ export function TodayPageClient({
         <DayNavigator date={date} timezone={timezone} />
 
         <ContentCrossfade
-          showB={!isDateNavigating}
-          a={<TodayContentSkeleton summary={summary} goal={goal} />}
+          showB={!isTodayLoading}
+          a={
+            <TodayContentSkeleton
+              summary={summary}
+              goal={goal}
+              animationKey={`${date}-${isHomeRefreshing ? "refresh" : "nav"}`}
+              mealSlotCount={mealSlots.length}
+            />
+          }
           b={
             <div className={cn("flex flex-col gap-3.5", CONTENT_FADE_IN)}>
               <DailyMacroSummary summary={summary} goal={goal} />

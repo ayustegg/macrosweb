@@ -17,7 +17,7 @@ import { useTabNavigation } from "@/components/layout/tab-navigation-provider";
 
 const PULL_ROTATION_DEG = 300;
 const SPIN_DEG_PER_SEC = 420;
-const DATE_NAV_MIN_MS = 520;
+export const DATE_NAV_MIN_MS = 520;
 const DATE_NAV_MAX_MS = 8000;
 
 /** Slow ease-back to rest angle after tab/date/refresh spin. */
@@ -41,8 +41,14 @@ interface HeaderBrandMotionContextValue {
   settleDurationMs: number;
   settleEasing: string;
   isDateNavigating: boolean;
+  isHomeRefreshing: boolean;
+  /** Date change or header home refresh — show today skeleton. */
+  isTodayLoading: boolean;
+  homeRefreshStartedRef: React.RefObject<number>;
   setPullState: (state: PullBrandState) => void;
   startDateNavigation: (targetDate: string) => void;
+  startHomeRefresh: () => void;
+  completeHomeRefresh: () => void;
 }
 
 const HeaderBrandMotionContext =
@@ -99,6 +105,7 @@ export function HeaderBrandMotionProvider({
   });
   const [spinAngle, setSpinAngle] = useState(0);
   const [dateNavigating, setDateNavigating] = useState(false);
+  const [homeRefreshing, setHomeRefreshing] = useState(false);
   const [settleHold, setSettleHold] = useState<number | null>(null);
   const [isSettling, setIsSettling] = useState(false);
 
@@ -107,14 +114,27 @@ export function HeaderBrandMotionProvider({
   const wasSpinningRef = useRef(false);
   const dateTargetRef = useRef<string | null>(null);
   const dateStartedRef = useRef(0);
+  const homeRefreshStartedRef = useRef(0);
 
   const completeDateNavigation = useCallback(() => {
     dateTargetRef.current = null;
     setDateNavigating(false);
   }, []);
 
+  const completeHomeRefresh = useCallback(() => {
+    setHomeRefreshing(false);
+  }, []);
+
+  const startHomeRefresh = useCallback(() => {
+    homeRefreshStartedRef.current = Date.now();
+    setHomeRefreshing(true);
+  }, []);
+
+  const isTodayLoading = dateNavigating || homeRefreshing;
+
   const spinning =
-    !reducedMotion && (isNavigating || pull.refreshing || dateNavigating);
+    !reducedMotion &&
+    (isNavigating || pull.refreshing || dateNavigating || homeRefreshing);
 
   const pullRotation =
     scrollRotation +
@@ -180,6 +200,13 @@ export function HeaderBrandMotionProvider({
     return () => window.clearTimeout(failSafe);
   }, [completeDateNavigation, dateNavigating]);
 
+  useEffect(() => {
+    if (!homeRefreshing) return;
+
+    const failSafe = window.setTimeout(completeHomeRefresh, DATE_NAV_MAX_MS);
+    return () => window.clearTimeout(failSafe);
+  }, [completeHomeRefresh, homeRefreshing]);
+
   const rotation = useMemo(() => {
     if (settleHold !== null) return settleHold;
     if (spinning) return spinAngle;
@@ -204,8 +231,13 @@ export function HeaderBrandMotionProvider({
     settleDurationMs: SETTLE_ROTATION_MS,
     settleEasing: SETTLE_ROTATION_EASING,
     isDateNavigating: dateNavigating,
+    isHomeRefreshing: homeRefreshing,
+    isTodayLoading,
+    homeRefreshStartedRef,
     setPullState: setPull,
     startDateNavigation,
+    startHomeRefresh,
+    completeHomeRefresh,
   };
 
   return (

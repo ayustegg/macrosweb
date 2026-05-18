@@ -1,3 +1,7 @@
+"use client";
+
+import { useEffect, useState } from "react";
+
 interface MacroTotals {
   kcal: number;
   protein_g: number;
@@ -10,6 +14,8 @@ interface Props {
   target: MacroTotals;
   size?: number;
   compact?: boolean;
+  /** Animate rings filling from empty on mount (e.g. loading skeleton). */
+  animateIn?: boolean;
 }
 
 const RINGS = [
@@ -33,7 +39,16 @@ const RINGS = [
     color: "var(--macro-fat)",
     track: "var(--macro-fat-tint)",
   },
-];
+] as const;
+
+const RING_FILL_MS = 920;
+const RING_STAGGER_MS = 110;
+const RING_FILL_EASING = "cubic-bezier(0.22, 1, 0.36, 1)";
+
+function prefersReducedMotion(): boolean {
+  if (typeof window === "undefined") return false;
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
 
 /** Four concentric Apple Watch–style rings: kcal → protein → carbs → fat. */
 export function MultiMacroRing({
@@ -41,7 +56,25 @@ export function MultiMacroRing({
   target,
   size = 212,
   compact = false,
+  animateIn = false,
 }: Props) {
+  const shouldAnimate = animateIn && !prefersReducedMotion();
+  const [filled, setFilled] = useState(() => !shouldAnimate);
+
+  useEffect(() => {
+    if (!shouldAnimate) return;
+
+    let inner = 0;
+    const outer = requestAnimationFrame(() => {
+      inner = requestAnimationFrame(() => setFilled(true));
+    });
+
+    return () => {
+      cancelAnimationFrame(outer);
+      cancelAnimationFrame(inner);
+    };
+  }, [shouldAnimate]);
+
   const cx = size / 2;
   const cy = size / 2;
   const ringCount = RINGS.length;
@@ -53,7 +86,6 @@ export function MultiMacroRing({
   const stroke = compact ? Math.max(3.5, Math.min(5, step * 0.72)) : 11;
   const gap = compact ? 1.5 : 4;
 
-  /** Even spacing so all 4 rings fit in compact (52px); fixed step overflows inner radii. */
   const radiusForRing = (i: number) =>
     compact ? maxR - i * step : cx - stroke / 2 - i * (stroke + gap);
 
@@ -65,16 +97,23 @@ export function MultiMacroRing({
       className="block"
       role="img"
       aria-label="Progreso de macros del día"
+      aria-busy={shouldAnimate && !filled}
     >
       {RINGS.map(({ key, color, track }, i) => {
         const v = totals[key];
         const t = target[key] || 1;
         const r = radiusForRing(i);
         if (r < stroke / 2) return null;
+
         const C = 2 * Math.PI * r;
         const pct = Math.max(0, Math.min(1.6, v / t));
-        const dash = C * Math.min(pct, 1);
+        const fillRatio = Math.min(pct, 1);
+        const targetOffset = C * (1 - fillRatio);
+        const startOffset = C;
+        const offset = filled ? targetOffset : startOffset;
+        const delay = shouldAnimate ? i * RING_STAGGER_MS : 0;
         const over = pct > 1;
+        const overDelay = delay + RING_FILL_MS;
 
         return (
           <g key={key} transform={`rotate(-90 ${cx} ${cy})`}>
@@ -94,7 +133,13 @@ export function MultiMacroRing({
               stroke={color}
               strokeWidth={stroke}
               strokeLinecap="round"
-              strokeDasharray={`${dash} ${C - dash + 1}`}
+              strokeDasharray={C}
+              strokeDashoffset={offset}
+              style={{
+                transition: shouldAnimate
+                  ? `stroke-dashoffset ${RING_FILL_MS}ms ${RING_FILL_EASING} ${delay}ms`
+                  : undefined,
+              }}
             />
             {over && (
               <circle
@@ -105,8 +150,14 @@ export function MultiMacroRing({
                 stroke={color}
                 strokeWidth={stroke}
                 strokeLinecap="round"
-                opacity={0.5}
-                strokeDasharray={`${C * (pct - 1)} ${C - C * (pct - 1) + 1}`}
+                opacity={filled ? 0.5 : 0}
+                strokeDasharray={C}
+                strokeDashoffset={filled ? C * (2 - pct) : C}
+                style={{
+                  transition: shouldAnimate
+                    ? `stroke-dashoffset ${RING_FILL_MS * 0.65}ms ${RING_FILL_EASING} ${overDelay}ms, opacity 200ms ${overDelay}ms`
+                    : undefined,
+                }}
               />
             )}
           </g>
